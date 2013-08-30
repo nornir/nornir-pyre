@@ -1,0 +1,13 @@
+INFO - RunWithProfiler - Profiling: Run()
+INFO - ImageArray - Loading image: C:\BuildScript\Test\Data\Images\0002_shadingcorrectedg_mosaic_1.png
+INFO - ImageArray - Done
+INFO - ImageArray - CreateImageArray
+INFO - ImageArray - Completed CreateImageArray
+INFO - ImageArray - Loading image: C:\BuildScript\Test\Data\Images\0001_shadingcorrectedyy_mosaic_1.png
+INFO - ImageArray - Done
+INFO - ImageArray - CreateImageArray
+INFO - ImageArray - Completed CreateImageArray
+WARNING - ThreadPool - Creating Thread Pool
+INFO - ThreadPool - +++ Save C:\Temp\testPyre.png
+WARNING - Multithreading Pool - Creating Multithreading Pool
+INFO - ThreadPool - --- Save C:\Temp\testPyre.png                                         00:00:16.854

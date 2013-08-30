@@ -1,0 +1,54 @@
+INFO - RunWithProfiler - Profiling: Run()
+INFO - ImageArray - Loading image: C:\BuildScript\Test\Data\Images\0002_shadingcorrectedg_mosaic_1.png
+INFO - ImageArray - Done
+INFO - ImageArray - CreateImageArray
+INFO - ImageArray - Completed CreateImageArray
+INFO - ImageArray - Loading image: C:\BuildScript\Test\Data\Images\0001_shadingcorrectedyy_mosaic_1.png
+INFO - ImageArray - Done
+INFO - ImageArray - CreateImageArray
+INFO - ImageArray - Completed CreateImageArray
+WARNING - ThreadPool - Creating Thread Pool
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0039999
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0049999
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0020001
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0020001
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0019999
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0019999
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0019999
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0020001
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.00099993
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0010002
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0010002
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0010002
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0010002
+INFO - ThreadPool - +++ OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>
+INFO - ThreadPool - --- OnTransformChanged calling <bound method TransformViewModel.OnTransformChanged of <transformviewmodel.TransformViewModel object at 0x00000000126612E8>>00:00:0.0010002

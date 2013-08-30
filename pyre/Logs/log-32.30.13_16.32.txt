@@ -1,0 +1,5 @@
+INFO - RunWithProfiler - Profiling: Run()
+INFO - ImageArray - Loading image: C:\BuildScript\Test\Images\0002_shadingcorrectedg_mosaic_1.png
+INFO - ImageArray - Done
+INFO - ImageArray - CreateImageArray
+INFO - ImageArray - Completed CreateImageArray
