@@ -1,3 +1,0 @@
-INFO - RunWithProfiler - Profiling: Run()
-INFO - RunWithProfiler - <pstats.Stats instance at 0x000000001280BD08>
-INFO - RunWithProfiler - Profiling: Run()

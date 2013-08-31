@@ -1,2 +1,0 @@
-WARNING - ThreadPool - Creating Thread Pool
-WARNING - Multithreading Pool - Creating Multithreading Pool
