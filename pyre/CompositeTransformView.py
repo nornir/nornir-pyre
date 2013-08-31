@@ -16,25 +16,28 @@ import ImageTransformView
 
 import pyglet
 
+import os
+import pyre
+
 class CompositeTransformView(ImageTransformView.ImageTransformView):
     '''
     Combines and image and a transform to render an image
     '''
     @property
     def width(self):
-        return self.FixedImageArray.width;
+        return self.FixedImageArray.width
 
     @property
     def height(self):
-        return self.FixedImageArray.height;
+        return self.FixedImageArray.height
 
     @property
     def fixedwidth(self):
-        return self.FixedImageArray.width;
+        return self.FixedImageArray.width
 
     @property
     def fixedheight(self):
-        return self.WarpedImageArray.height;
+        return self.WarpedImageArray.height
 
 
     def __init__(self, FixedImageArray, WarpedImageArray, Transform):
@@ -42,23 +45,24 @@ class CompositeTransformView(ImageTransformView.ImageTransformView):
         Constructor
         '''
         super(CompositeTransformView, self).__init__(ImageViewModel=FixedImageArray, TransformViewModel=Transform, ForwardTransform=True)
-        self.FixedImageArray = FixedImageArray;
-        self.WarpedImageArray = WarpedImageArray;
-        self.TransformViewModel = Transform;
-        self.ForwardTransform = False;
+        self.FixedImageArray = FixedImageArray
+        self.WarpedImageArray = WarpedImageArray
+        self.TransformViewModel = Transform
+        self.ForwardTransform = False
 
-        self.PointImage = pyglet.image.load("Point.png");
-        self.SelectedPointImage = pyglet.image.load("SelectedPoint.png");
+        imageFullPath = os.path.join(pyre.ResourcePath(), "Point.png")
+        self.PointImage = pyglet.image.load(imageFullPath)
+        self.SelectedPointImage = pyglet.image.load(os.path.join(pyre.ResourcePath(), "SelectedPoint.png"))
 
         # Valid Values are 'Add' and 'Subtract'
-        self.ImageMode = 'Add';
+        self.ImageMode = 'Add'
 
 
     def draw_points(self, ForwardTransform=True, SelectedIndex=None, FixedSpace=True, BoundingBox=None, ScaleFactor=1):
         # if(ForwardTransform):
 
-        verts = self.TransformViewModel.WarpedPoints;
-        verts = self.TransformViewModel.Transform(verts);
+        verts = self.TransformViewModel.WarpedPoints
+        verts = self.TransformViewModel.Transform(verts)
 
         self._draw_points(verts, SelectedIndex, BoundingBox=BoundingBox, ScaleFactor=ScaleFactor)
 
@@ -72,63 +76,63 @@ class CompositeTransformView(ImageTransformView.ImageTransformView):
 
         iTri = len(Triangles) - 1
         while(iTri >= 0):
-            tri = Triangles[iTri];
+            tri = Triangles[iTri]
             if tri[0] in convex_hull_flat and tri[1] in convex_hull_flat and tri[2] in convex_hull_flat:
                 # OK, find out if the midpoint of any lines are outside the convex hull
-                Triangles = numpy.delete(Triangles, iTri, 0);
+                Triangles = numpy.delete(Triangles, iTri, 0)
 
-            iTri = iTri - 1;
+            iTri = iTri - 1
 
-        return Triangles;
+        return Triangles
 
     def draw_lines(self, ForwardTransform=True):
         if(self.TransformViewModel is None):
-            return;
+            return
 
-        pyglet.gl.glColor4f(1.0, 0, 0, 1.0);
-        ImageArray = self.WarpedImageArray;
+        pyglet.gl.glColor4f(1.0, 0, 0, 1.0)
+        ImageArray = self.WarpedImageArray
         for ix in range(0, ImageArray.NumCols):
             for iy in range(0, ImageArray.NumRows):
-                x = ImageArray.TextureSize[1] * ix;
-                y = ImageArray.TextureSize[0] * iy;
-                h, w = ImageArray.TextureSize;
+                x = ImageArray.TextureSize[1] * ix
+                y = ImageArray.TextureSize[0] * iy
+                h, w = ImageArray.TextureSize
 
                 WarpedCorners = [[y, x],
                                 [y, x + w],
                                 [y + h, x],
-                                [y + h, x + w]];
+                                [y + h, x + w]]
 
-                FixedCorners = self.TransformViewModel.Transform(WarpedCorners);
+                FixedCorners = self.TransformViewModel.Transform(WarpedCorners)
 
-                tri = scipy.spatial.Delaunay(FixedCorners);
-                LineIndicies = self.LineIndiciesFromTri(tri.vertices);
+                tri = scipy.spatial.Delaunay(FixedCorners)
+                LineIndicies = self.LineIndiciesFromTri(tri.vertices)
 
-                FlatPoints = numpy.fliplr(FixedCorners).ravel().tolist();
+                FlatPoints = numpy.fliplr(FixedCorners).ravel().tolist()
 
-                vertarray = (gl.GLfloat * len(FlatPoints))(*FlatPoints);
+                vertarray = (gl.GLfloat * len(FlatPoints))(*FlatPoints)
 
-                gl.glDisable(gl.GL_TEXTURE_2D);
+                gl.glDisable(gl.GL_TEXTURE_2D)
 
                 pyglet.graphics.draw_indexed(len(vertarray) / 2,
                                                          gl.GL_LINES,
                                                          LineIndicies,
-                                                         ('v2f', vertarray));
-        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0);
+                                                         ('v2f', vertarray))
+        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
 
 
     def draw_textures(self, BoundingBox=None, glFunc=None):
 
-        FixedColor = None;
+        FixedColor = None
         if(glFunc == gl.GL_FUNC_ADD):
-            FixedColor = (1.0, 0.0, 1.0, 1.0);
+            FixedColor = (1.0, 0.0, 1.0, 1.0)
 
-        self._draw_fixed_image(self.FixedImageArray, FixedColor, BoundingBox=BoundingBox);
+        self._draw_fixed_image(self.FixedImageArray, FixedColor, BoundingBox=BoundingBox)
 
-        WarpedColor = None;
+        WarpedColor = None
         if(glFunc == gl.GL_FUNC_ADD):
-            gl.glBlendEquation(glFunc);
-            WarpedColor = (0, 1.0, 0, 1.0);
+            gl.glBlendEquation(glFunc)
+            WarpedColor = (0, 1.0, 0, 1.0)
 
-        self._draw_warped_image(self.WarpedImageArray, color=WarpedColor, BoundingBox=BoundingBox, glFunc=glFunc);
-        # self._draw_fixed_image(self.__WarpedImageArray);
-        # self._draw_warped_image(self.__FixedImageArray);
+        self._draw_warped_image(self.WarpedImageArray, color=WarpedColor, BoundingBox=BoundingBox, glFunc=glFunc)
+        # self._draw_fixed_image(self.__WarpedImageArray)
+        # self._draw_warped_image(self.__FixedImageArray)

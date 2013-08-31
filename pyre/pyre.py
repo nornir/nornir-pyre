@@ -69,6 +69,16 @@ def ProcessArgs():
     return parser
 
 
+def ResourcePath():
+
+    try:
+        path = os.path.dirname(__file__)
+    except:
+        path = os.getcwd()
+
+    return os.path.join(path, 'resources')
+
+
 def LoadTexture(image):
     data = imread(image, flatten=True)
     return TextureForNumpyImage(data)
@@ -220,6 +230,9 @@ def Exit():
 
 def README_Import():
     readmePath = os.path.join(os.path.dirname(sys.argv[0]), "readme.txt")
+    if not os.path.exists(readmePath):
+        return "No readme.txt was found in " + readmePath
+
     hReadme = open(readmePath, 'r')
 
     Readme = hReadme.read()

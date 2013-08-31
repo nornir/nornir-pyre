@@ -15,15 +15,16 @@ import matplotlib
 from glob import glob
 import scipy
 
+data_files = []
+# data_files = {'pyre' : ['pyre/resources/*.png']}
 #data_files = [("Microsoft.VC90.CRT", glob(r'C:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT\*.*'))]     
 # data_files=matplotlib.get_py2exe_datafiles()
 # data_files.append(("Microsoft.VC90.CRT", ['msvcp90.dll']))
 # data_files.append(("", glob(r'*.png')))
 
-data_files = []
 
 excludes = ["Tkconstants","Tkinter","tcl",'_gtkagg', '_tkagg']
-includes = [    r'pyre',
+includes = [
                 r'matplotlib',
                 r'numpy',
                 r'scipy',
@@ -43,8 +44,9 @@ includes = [    r'pyre',
                  'nornir_imageregistration',
                  'nornir_shared',
                  'nornir_pools',
-                 'sys'
-                 ]
+                 'sys']
+
+includes = []
 packages = ['pyre']
 
 build_exe_options = {"packages": packages,
@@ -58,7 +60,7 @@ if sys.platform == "win32":
     base = "Win32GUI"
 
 #setup(data_files=data_files, console=['Pyre.py'])
-setup(name="PyRe", 
+setup(name="pyre",
       version="1.0.0",
       data_files=data_files,
       description='Python Image Registration Tool',
@@ -67,6 +69,7 @@ setup(name="PyRe",
       console=['pyre.py'],
       requires=includes,
       packages=packages,
+      package_data={'pyre' : ['resources/*.png']},
       options={
                 'py2exe': {'excludes': excludes,
                            'includes': includes},

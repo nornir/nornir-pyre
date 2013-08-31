@@ -9,6 +9,7 @@ Created on Oct 19, 2012
 import numpy
 import logging
 import scipy.spatial
+import os
 
 import pyglet
 
@@ -20,6 +21,8 @@ from nornir_imageregistration.geometry.rectangle import Rectangle
 from transformviewmodel import TransformViewModel
 
 import time
+
+import pyre
 
 
 class RenderCache(object):
@@ -76,10 +79,12 @@ class ImageTransformView(object):
         self._ImageViewModel = ImageViewModel
         self.TransformViewModel = TransformViewModel
 
-        self.PointImage = pyglet.image.load("Point.png")
+       # print "Pyre resource path: " + ResourcePath()
+
+        self.PointImage = pyglet.image.load(os.path.join(pyre.ResourcePath(), "Point.png"))
         self.PointImage.anchor_x = self.PointImage.width / 2
         self.PointImage.anchor_y = self.PointImage.height / 2
-        self.SelectedPointImage = pyglet.image.load("SelectedPoint.png")
+        self.SelectedPointImage = pyglet.image.load(os.path.join(pyre.ResourcePath(), "SelectedPoint.png"));
         self.SelectedPointImage.anchor_x = self.SelectedPointImage.width / 2
         self.SelectedPointImage.anchor_y = self.SelectedPointImage.height / 2
 

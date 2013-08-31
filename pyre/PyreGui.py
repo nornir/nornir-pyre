@@ -491,9 +491,10 @@ class FileDrop (wx.FileDropTarget):
 
 
     def OnDropFiles(self, x, y, filenames):
-
         for name in filenames:
+
             try:
+
                 fullpath = name.encode('ascii')
                 dirname, filename = os.path.split(name)
                 root, extension = os.path.splitext(name)

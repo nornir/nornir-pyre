@@ -1,6 +1,6 @@
 
-import argparse 
-import Utils.Misc
+import argparse
+import nornir_shared.misc as misc
 import sys
 import os
 import logging
@@ -8,36 +8,37 @@ import logging
 def ProcessArgs():
 
     # conflict_handler = 'resolve' replaces old arguments with new if both use the same option flag
-    parser = argparse.ArgumentParser('Pyre', conflict_handler = 'resolve');
+    parser = argparse.ArgumentParser('Pyre', conflict_handler='resolve');
 
     parser.add_argument('-Fixed',
-                        action = 'store',
-                        required = True,
-                        type = str,
-                        default = None,
-                        help = 'Path to the fixed image',
-                        dest = 'FixedImageFullPath'
+                        action='store',
+                        required=True,
+                        type=str,
+                        default=None,
+                        help='Path to the fixed image',
+                        dest='FixedImageFullPath'
                         );
 
     parser.add_argument('-Warped',
-                        action = 'store',
-                        required = True,
-                        type = str,
-                        default = None,
-                        help = 'Path to the image to be warped',
-                        dest = 'WarpedImageFullPath'
+                        action='store',
+                        required=True,
+                        type=str,
+                        default=None,
+                        help='Path to the image to be warped',
+                        dest='WarpedImageFullPath'
                         );
 
     parser.add_argument('-Output',
-                        action = 'store',
-                        required = True,
-                        default = None,
-                        type = str,
-                        help = 'The path to the image file to write',
-                        dest = 'OutputImageFullPath'
+                        action='store',
+                        required=True,
+                        default=None,
+                        type=str,
+                        help='The path to the image file to write',
+                        dest='OutputImageFullPath'
                         );
 
     return parser;
+
 
 if __name__ == "__main__":
     parser = ProcessArgs();
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     Config.OutputImageFullPath = args.OutputImageFullPath;
     Config.OutputDir = os.path.dirname(Config.OutputImageFullPath);
 
-    Utils.Misc.SetupLogging(Config.OutputDir, Level = logging.WARNING);
+    misc.SetupLogging(Config.OutputDir, Level=logging.WARNING);
 
     print sys.argv[0]
     try:
