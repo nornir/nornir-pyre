@@ -27,8 +27,7 @@ if __name__ == '__main__':
                          "nornir_pools",
                          "nornir_shared",
                          "nornir_imageregistration",
-                         "wx",
-                         "wxversion"]
+                         "wx"]
 
     dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools",
                         "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared",
@@ -53,7 +52,7 @@ if __name__ == '__main__':
           description='Python Image Registration Tool',
           author='James Anderson and Drew Ferrell',
           author_email='james.r.anderson@utah.edu',
-          console=['pyre.py'],
-          required_packages=required_packages,
+          install_requires=required_packages,
           dependency_links=dependency_links,
+          packages=packages,
           package_data={'pyre' : ['resources/*.png']})

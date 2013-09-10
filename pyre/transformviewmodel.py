@@ -13,17 +13,40 @@ from pyglet.gl import *
 from nornir_imageregistration.transforms import *
 import numpy as np
 import scipy.ndimage
+import common
 import time
 import copy;
 import pyre
 import nornir_pools as Pools
+from nornir_imageregistration.alignment_record import AlignmentRecord
 
+
+def _DefaultTransform(FixedShape=None, WarpedShape=None):
+    # FixedSize = Utils.Images.GetImageS ize(FixedImageFullPath)
+    # WarpedSize = Utils.Images.GetImageSize(WarpedImageFullPath)
+
+
+    if FixedShape is None:
+        FixedShape = (512, 512)
+
+    if WarpedShape is None:
+        WarpedShape = (512, 512)
+
+    alignRecord = AlignmentRecord(peak=(0, 0), weight=0, angle=0)
+    return alignRecord.ToTransform(FixedShape,
+                                        WarpedShape)
 
 
 class  TransformViewModel(object):
     '''
     Combines and image and a transform to render an image
     '''
+
+    @classmethod
+    def CreateDefault(cls, FixedShape=None, WarpedShape=None):
+        T = _DefaultTransform(FixedShape, WarpedShape)
+        return TransformViewModel(T)
+
     @property
     def width(self):
         return self.TransformModel.width;
@@ -49,11 +72,11 @@ class  TransformViewModel(object):
     @property
     def FixedPoints(self):
         return copy.deepcopy(self.TransformModel.FixedPoints)
-    
+
     @property
     def WarpedTriangles(self):
         return self.TransformModel.WarpedTriangles
-    
+
     @property
     def FixedTriangles(self):
         return self.TransformModel.FixedTriangles
@@ -70,9 +93,9 @@ class  TransformViewModel(object):
             self._TransformModel.RemoveOnChangeEventListener(self.OnTransformChanged)
 
         self._TransformModel = value;
-        
+
         if not value is None:
-            assert(isinstance(value,  triangulation.Triangulation))
+            assert(isinstance(value, triangulation.Triangulation))
             self._TransformModel.AddOnChangeEventListener(self.OnTransformChanged)
 
 
@@ -94,8 +117,8 @@ class  TransformViewModel(object):
 
 
     def OnTransformChanged(self):
-        #If the transform is getting complicated then use UpdateDataStructures to parallelize the
-        #data structure creation as much as possible
+        # If the transform is getting complicated then use UpdateDataStructures to parallelize the
+        # data structure creation as much as possible
         if self.NumPoints > 25:
             self._TransformModel.UpdateDataStructures()
         self.FireOnChangeEvent()
@@ -305,7 +328,7 @@ class  TransformViewModel(object):
             fixed = self.GetFixedPoint(i_point)
             warped = self.GetWarpedPoint(i_point)
 
-            task = pool.add_task(i_point, pyre.AttemptAlignPoint,
+            task = pool.add_task(i_point, common.AttemptAlignPoint,
                                             self,
                                             pyre.currentConfig.FixedImageViewModel.Image,
                                             pyre.currentConfig.WarpedImageViewModel.Image,

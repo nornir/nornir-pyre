@@ -10,7 +10,9 @@ import nornir_imageregistration.transforms.factory
 import pygletwx
 import imagetransformpanel
 import pyre
+import common
 import nornir_pools as Pools
+from transformviewmodel import TransformViewModel
 from ImageTransformView import ImageTransformView
 from CompositeTransformView import CompositeTransformView
 
@@ -28,6 +30,8 @@ class MyFrame(wx.Frame):
 
     def __init__(self, parent, windowID, title, showFixed=False, composite=False):
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
+
+        print str(self.Parent)
 
         self._ID = windowID
         # self.imagepanel = wx.Panel(self, -1)
@@ -76,6 +80,15 @@ class MyFrame(wx.Frame):
         # Allows Drag and Drop
         dt = FileDrop(self)
         self.SetDropTarget(dt)
+
+        self.imagepanel.SetDropTarget(FileDrop(self.imagepanel))
+
+        # self.SetDropTarget(TextDrop(self))
+        # self.DragAcceptFiles(True)
+
+        # print "Drop target set"
+
+        # print str(self.GetDropTarget())
 
         self.Show(True)
         self.setPosition()
@@ -261,7 +274,7 @@ class MyFrame(wx.Frame):
         dlg.Destroy()
 
     def OnClearAllPoints(self, e):
-        pyre.currentConfig.TransformViewModel = pyre.DefaultTransformViewModel(pyre.currentConfig.FixedImageViewModel.RawImageSize,
+        pyre.currentConfig.TransformViewModel = TransformViewModel.CreateDefault(pyre.currentConfig.FixedImageViewModel.RawImageSize,
                                                                  pyre.currentConfig.WarpedImageViewModel.RawImageSize)
 
 
@@ -281,7 +294,7 @@ class MyFrame(wx.Frame):
 
 
     def OnRotateTranslate(self, e):
-        pyre.RotateTranslateWarpedImage()
+        common.RotateTranslateWarpedImage()
 
 
     def OnOpenFixedImage(self, e):
@@ -335,7 +348,7 @@ class MyFrame(wx.Frame):
 
                 pool = Pools.GetGlobalThreadPool()
                 pool.add_task("Save " + pyre.currentConfig.OutputImageFullPath,
-                               pyre.SaveRegisteredWarpedImage,
+                               common.SaveRegisteredWarpedImage,
                                pyre.currentConfig.OutputImageFullPath,
                                pyre.currentConfig.TransformViewModel.TransformModel,
                                pyre.currentConfig.WarpedImageViewModel.Image)
@@ -484,17 +497,32 @@ class MyFrame(wx.Frame):
         self.Update()
 
 
-class FileDrop (wx.FileDropTarget):
+class TextDrop (wx.TextDropTarget):
     def __init__(self, window):
-        wx.FileDropTarget.__init__(self)
+
+        super(TextDrop, self).__init__()
         self.window = window
 
+    def OnDragOver(self, *args, **kwargs):
+        print "DragOver Text"
+        return wx.TextDropTarget.OnDragOver(self, *args, **kwargs)
+
+    def OnDropText(self, x, y, data):
+        print str(data)
+
+class FileDrop (wx.FileDropTarget):
+    def __init__(self, window):
+
+        super(FileDrop, self).__init__()
+        self.window = window
+
+    def OnDragOver(self, *args, **kwargs):
+        print "DragOver"
+        return wx.FileDropTarget.OnDragOver(self, *args, **kwargs)
 
     def OnDropFiles(self, x, y, filenames):
         for name in filenames:
-
             try:
-
                 fullpath = name.encode('ascii')
                 dirname, filename = os.path.split(name)
                 root, extension = os.path.splitext(name)

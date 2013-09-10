@@ -11,11 +11,8 @@ import argparse
 import nornir_imageregistration.assemble as assemble
 import sys
 import PyreGui
-from nornir_imageregistration.alignment_record import AlignmentRecord
 from nornir_imageregistration.transforms import *
 import nornir_imageregistration.stos_brute as stos
-import state
-from transformviewmodel import TransformViewModel
 import numpy
 
 from scipy.misc import imsave
@@ -24,64 +21,11 @@ from scipy.ndimage import imread
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-if not hasattr(sys, 'frozen'):
-    import wxversion
-    wxversion.select('2.8')
-import wx
-
-from commandhistory import CommandHistory
-history = CommandHistory()
-
-OutputWindow = None
-app = None
-
-__Transform = None
-
-currentConfig = state.Configuration()
-
-'''Dictionary of all windows'''
-Windows = {}
-
-
-def ProcessArgs():
-
-    # conflict_handler = 'resolve' replaces old arguments with new if both use the same option flag
-    parser = argparse.ArgumentParser('pyre', conflict_handler='resolve')
-
-    parser.add_argument('-Fixed',
-                        action='store',
-                        required=False,
-                        type=str,
-                        default=None,
-                        help='Path to the fixed image',
-                        dest='FixedImageFullPath'
-                        )
-
-    parser.add_argument('-Warped',
-                        action='store',
-                        required=False,
-                        type=str,
-                        default=None,
-                        help='Path to the image to be warped',
-                        dest='WarpedImageFullPath'
-                        )
-
-    return parser
-
-
-def ResourcePath():
-
-    try:
-        path = os.path.dirname(__file__)
-    except:
-        path = os.getcwd()
-
-    return os.path.join(path, 'resources')
-
 
 def LoadTexture(image):
     data = imread(image, flatten=True)
     return TextureForNumpyImage(data)
+
 
 def TextureForNumpyImage(image):
     '''Create a GL texture for the scipy.ndimage array'''
@@ -118,16 +62,16 @@ def SyncWindows(LookAt, scale):
 #    Config.CompositeWin.camera.x = LookAt[0]
 #    Config.CompositeWin.camera.y = LookAt[1]
 #    Config.CompositeWin.camera.scale = scale
-    Windows['Composite'].imagepanel.camera.x = LookAt[0]
-    Windows['Composite'].imagepanel.camera.y = LookAt[1]
-    Windows['Composite'].imagepanel.camera.scale = scale
+    pyre.Windows['Composite'].imagepanel.camera.x = LookAt[0]
+    pyre.Windows['Composite'].imagepanel.camera.y = LookAt[1]
+    pyre.Windows['Composite'].imagepanel.camera.scale = scale
 
 #    Config.FixedWindow.camera.x = LookAt[0]
 #    Config.FixedWindow.camera.y = LookAt[1]
 #    Config.FixedWindow.camera.scale = scale
-    Windows['Fixed'].imagepanel.camera.x = LookAt[0]
-    Windows['Fixed'].imagepanel.camera.y = LookAt[1]
-    Windows['Fixed'].imagepanel.camera.scale = scale
+    pyre.Windows['Fixed'].imagepanel.camera.x = LookAt[0]
+    pyre.Windows['Fixed'].imagepanel.camera.y = LookAt[1]
+    pyre.Windows['Fixed'].imagepanel.camera.scale = scale
 
 #    warpedLookAt = LookAt
 #    if(not Config.WarpedWindow.ShowWarped):
@@ -135,8 +79,8 @@ def SyncWindows(LookAt, scale):
 #        warpedLookAt = warpedLookAt[0]
 
     warpedLookAt = LookAt
-    if(Windows['Warped'].IsShown()):
-        warpedLookAt = currentConfig._TransformViewModel.InverseTransform([LookAt])
+    if(pyre.Windows['Warped'].IsShown()):
+        warpedLookAt = pyre.currentConfig._TransformViewModel.InverseTransform([LookAt])
         warpedLookAt = warpedLookAt[0]
 
 
@@ -144,9 +88,9 @@ def SyncWindows(LookAt, scale):
 #    Config.WarpedWindow.camera.x = warpedLookAt[0]
 #    Config.WarpedWindow.camera.y = warpedLookAt[1]
 #    Config.WarpedWindow.camera.scale = scale
-    Windows['Warped'].imagepanel.camera.x = LookAt[0]
-    Windows['Warped'].imagepanel.camera.y = LookAt[1]
-    Windows['Warped'].imagepanel.camera.scale = scale
+    pyre.Windows['Warped'].imagepanel.camera.x = LookAt[0]
+    pyre.Windows['Warped'].imagepanel.camera.y = LookAt[1]
+    pyre.Windows['Warped'].imagepanel.camera.scale = scale
 
 
 def RotateTranslateWarpedImage():
@@ -160,8 +104,9 @@ def RotateTranslateWarpedImage():
                                              pyre.currentConfig.WarpedImageViewModel.RawImageSize)
         pyre.currentConfig.TransformViewModel.SetPoints(transform.points)
 
-        history.SaveState(pyre.currentConfig.TransformViewModel.SetPoints, pyre.currentConfig.TransformViewModel.TransformModel.points)
+        pyre.history.SaveState(pyre.currentConfig.TransformViewModel.SetPoints, pyre.currentConfig.TransformViewModel.TransformModel.points)
         # Config.TransformViewModel = TransformViewModel(Config.CurrentTransform)
+
 
 def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea=None):
     '''Try to use the Composite view to render the two tiles we need for alignment'''
@@ -171,7 +116,6 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
 
     FixedBotLeft = [controlpoint[0] - (alignmentArea[0] / 2.0),
                     controlpoint[1] - (alignmentArea[1] / 2.0)]
-
 
     # Pull image subregions
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
@@ -193,68 +137,8 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     print("Auto-translate result: " + str(apoint))
     return apoint
 
-def DefaultTransform(FixedShape=None, WarpedShape=None):
-    # FixedSize = Utils.Images.GetImageS ize(FixedImageFullPath)
-    # WarpedSize = Utils.Images.GetImageSize(WarpedImageFullPath)
 
-
-    if FixedShape is None:
-        FixedShape = (512, 512)
-
-    if WarpedShape is None:
-        WarpedShape = (512, 512)
-
-    alignRecord = AlignmentRecord(peak=(0, 0), weight=0, angle=0)
-    return alignRecord.ToTransform(FixedShape,
-                                        WarpedShape)
-
-
-def DefaultTransformViewModel(FixedShape=None, WarpedShape=None):
-
-    T = DefaultTransform(FixedShape, WarpedShape)
-
-    return TransformViewModel(T)
-
-
-def AnyVisibleWindows():
-        AnyVisibleWindows = False
-        for w in pyre.Windows.values():
-            AnyVisibleWindows = AnyVisibleWindows or w.IsShown()
-
-        return AnyVisibleWindows
-
-def Exit():
-    '''Destroy all windows and exit the application'''
-    for w in pyre.Windows.values():
-        w.Destroy()
-
-def README_Import():
-    readmePath = os.path.join(os.path.dirname(sys.argv[0]), "readme.txt")
-    if not os.path.exists(readmePath):
-        return "No readme.txt was found in " + readmePath
-
-    hReadme = open(readmePath, 'r')
-
-    Readme = hReadme.read()
-    hReadme.close()
-    return Readme
-
-
-def Run():
-
-    readmetxt = README_Import()
-    print readmetxt
-
-    pyre.app = wx.App(False)
-
-    pyre.Windows["Fixed"] = PyreGui.MyFrame(None, "Fixed", 'Fixed Image', showFixed=True)
-    pyre.Windows["Warped"] = PyreGui.MyFrame(None, "Warped", 'Warped Image')
-    pyre.Windows["Composite"] = PyreGui.MyFrame(None, "Composite", 'Composite', showFixed=True, composite=True)
-
-    pyre.app.MainLoop()
-
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     nornir_shared.misc.SetupLogging(os.curdir, Level=logging.WARNING)
 
     # If we get a single argument which is a stos file, load it
@@ -265,7 +149,7 @@ if __name__ == '__main__':
         if ext.lower() == ".stos":
             pyre.currentConfig.LoadStos(singleArg)
     else:
-        parser = ProcessArgs()
+        parser = pyre.ProcessArgs()
         args = parser.parse_args()
 
         if not args.WarpedImageFullPath is None:
@@ -274,10 +158,6 @@ if __name__ == '__main__':
         if not args.FixedImageFullPath is None:
             pyre.currentConfig.LoadFixedImage(args.FixedImageFullPath)
 
-    # Run()
+    pyre.Run()
 
-#    functionStr = 'IrTweakInit("' + str(FixedImageFullPath) + '", "' + str(WarpedImageFullPath) + '")'
-#    functionStr = functionStr.replace('\\', '\\\\')
-    nornir_shared.misc.RunWithProfiler("Run()")
-   # IrTweakInit(Config.FixedImageFullPath, Config.WarpedImageFullPath)
 

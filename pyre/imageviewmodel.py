@@ -14,6 +14,7 @@ import sys
 from pylab import *
 import pyre
 import nornir_imageregistration.core as core
+import common
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -187,7 +188,7 @@ class ImageViewModel(object):
                 else:
                     temp = self.Image[iY:end_iY, iX:end_iX]
 
-                texture = pyre.TextureForNumpyImage(temp)
+                texture = common.TextureForNumpyImage(temp)
                 columnTextures.append(texture)
 
             TextureGrid.append(columnTextures)

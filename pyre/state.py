@@ -6,7 +6,6 @@ Created on Oct 24, 2012
 import numpy
 from nornir_imageregistration.io.stosfile import StosFile
 import nornir_imageregistration.transforms.factory as factory
-import pyre
 from imageviewmodel import ImageViewModel
 from transformviewmodel import TransformViewModel
 import os
@@ -37,7 +36,7 @@ class Configuration(object):
         self._FixedImageViewModel = val
         if not val is None:
             assert(isinstance(val, ImageViewModel))
-            
+
         self.FireOnImageChanged(True)
 
     @property
@@ -49,7 +48,7 @@ class Configuration(object):
         self._WarpedImageViewModel = val
         if not val is None:
             assert(isinstance(val, ImageViewModel))
-            
+
         self.FireOnImageChanged(False)
 
     @property
@@ -61,7 +60,7 @@ class Configuration(object):
         self._CompositeImageViewModel = val
         if not val is None:
             assert(isinstance(val, ImageViewModel))
-            
+
         self.FireOnImageChanged(False)
 
     @property
@@ -76,17 +75,17 @@ class Configuration(object):
             if not self.FixedImageViewModel is None:
                 FixedShape = [self.FixedImageViewModel.height, self.FixedImageViewModel.width]
 
-            self.TransformViewModel = pyre.DefaultTransformViewModel(FixedShape, WarpedShape)
+            self.TransformViewModel = TransformViewModel.CreateDefault(FixedShape, WarpedShape)
 
         return self._TransformViewModel
 
     @TransformViewModel.setter
     def TransformViewModel(self, val):
         self._TransformViewModel = val
-        
+
         if not val is None:
             assert(isinstance(val, TransformViewModel))
-            
+
         self.FireOnTransformViewModelChanged()
 
     def __init__(self):
