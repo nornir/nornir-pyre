@@ -4,8 +4,6 @@ Created on Apr 10, 2013
 @author: u0388504
 '''
 
-
-
 class CommandHistory (object):
     """Saves and returns objects along with indicies"""
 
@@ -68,3 +66,5 @@ class CommandHistory (object):
         (recoveryfunction, args, kwargs) = self.History[index]
 
         recoveryfunction(*args, **kwargs)
+
+history = CommandHistory()

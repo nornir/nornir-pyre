@@ -15,8 +15,7 @@ import numpy as np
 import scipy.ndimage
 import common
 import time
-import copy;
-import pyre
+import copy
 import nornir_pools as Pools
 from nornir_imageregistration.alignment_record import AlignmentRecord
 
@@ -151,7 +150,7 @@ class  TransformViewModel(object):
         self.TransformModel = TransformModel
 
         if TransformModel is None:
-            self.TransformModel = Pyre.DefaultTransform()
+            self.TransformModel = _DefaultTransform()
 
         self.Debug = False;
         self.ShowWarped = False;
@@ -317,6 +316,11 @@ class  TransformViewModel(object):
 
     def AutoAlignPoints(self, i_points):
         '''Attemps to align the specified point indicies'''
+        from state import currentConfig
+
+        if(currentConfig.FixedImageViewModel is None or
+           currentConfig.WarpedImageViewModel is None):
+            return
 
         pool = Pools.GetGlobalThreadPool()
 
@@ -330,8 +334,8 @@ class  TransformViewModel(object):
 
             task = pool.add_task(i_point, common.AttemptAlignPoint,
                                             self,
-                                            pyre.currentConfig.FixedImageViewModel.Image,
-                                            pyre.currentConfig.WarpedImageViewModel.Image,
+                                            currentConfig.FixedImageViewModel.Image,
+                                            currentConfig.WarpedImageViewModel.Image,
                                             fixed,
                                             warped)
             indextotask[i_point] = task

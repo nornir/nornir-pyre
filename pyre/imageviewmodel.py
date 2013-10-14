@@ -12,7 +12,7 @@ import scipy.ndimage
 import nornir_shared.images as images
 import sys
 from pylab import *
-import pyre
+import resources
 import nornir_imageregistration.core as core
 import common
 
@@ -188,7 +188,7 @@ class ImageViewModel(object):
                 else:
                     temp = self.Image[iY:end_iY, iX:end_iX]
 
-                texture = common.TextureForNumpyImage(temp)
+                texture = resources.TextureForNumpyImage(temp)
                 columnTextures.append(texture)
 
             TextureGrid.append(columnTextures)

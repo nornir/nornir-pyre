@@ -6,9 +6,6 @@ Created on Oct 16, 2012
 
 
 import Camera
-
-import pyre
-
 import math
 
 from pyglet import *
@@ -18,9 +15,12 @@ import wx
 import nornir_pools as pools
 import numpy as np
 
+from state import currentConfig
+from pyre import history
+
 from transformviewmodel import TransformViewModel
-from ImageTransformView import ImageTransformView
-from CompositeTransformView import CompositeTransformView
+from imagetransformview import ImageTransformView
+from compositetransformview import CompositeTransformView
 
 class ImageTransformViewPanel(pygletwx.GLPanel):
     '''
@@ -150,10 +150,8 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         self.TransformViewModel = TransformViewModel
         self.ImageTransformView = ImageTransformView
 
-
-
-        pyre.currentConfig.AddOnTransformViewModelChangeEventListener(self.OnTransformViewModelChanged)
-        pyre.currentConfig.AddOnImageViewModelChangeEventListener(self.OnImageViewModelChanged)
+        currentConfig.AddOnTransformViewModelChangeEventListener(self.OnTransformViewModelChanged)
+        currentConfig.AddOnImageViewModelChangeEventListener(self.OnImageViewModelChanged)
 
         # self.schedule = clock.schedule_interval(func = self.update, interval = 1 / 2.)
         self.timer = wx.Timer(self)
@@ -235,8 +233,8 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
 
     def OnTransformViewModelChanged(self):
         if not self.ImageTransformView is None:
-            self.TransformViewModel = pyre.currentConfig.TransformViewModel
-            self.ImageTransformView.TransformViewModel = pyre.currentConfig.TransformViewModel
+            self.TransformViewModel = currentConfig.TransformViewModel
+            self.ImageTransformView.TransformViewModel = currentConfig.TransformViewModel
 
         self.canvas.Refresh()
 
@@ -262,16 +260,16 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
 
     def UpdateRawImageWindow(self):
         if self.composite:
-            if not (pyre.currentConfig.FixedImageViewModel is None or pyre.currentConfig.WarpedImageViewModel is None):
-                self.ImageTransformView = CompositeTransformView(pyre.currentConfig.FixedImageViewModel,
-                                                                 pyre.currentConfig.WarpedImageViewModel,
-                                                                 pyre.currentConfig.TransformViewModel)
+            if not (currentConfig.FixedImageViewModel is None or currentConfig.WarpedImageViewModel is None):
+                self.ImageTransformView = CompositeTransformView(currentConfig.FixedImageViewModel,
+                                                                 currentConfig.WarpedImageViewModel,
+                                                                 currentConfig.TransformViewModel)
             else:
                 self.ImageTransformView = None
         elif not self.FixedSpace:
-            self.ImageTransformView = ImageTransformView(pyre.currentConfig.WarpedImageViewModel, pyre.currentConfig.TransformViewModel, ForwardTransform=True)
+            self.ImageTransformView = ImageTransformView(currentConfig.WarpedImageViewModel, currentConfig.TransformViewModel, ForwardTransform=True)
         else:
-            self.ImageTransformView = ImageTransformView(pyre.currentConfig.FixedImageViewModel, pyre.currentConfig.TransformViewModel, ForwardTransform=False)
+            self.ImageTransformView = ImageTransformView(currentConfig.FixedImageViewModel, currentConfig.TransformViewModel, ForwardTransform=False)
 
 
     def NextGLFunction(self):
@@ -362,7 +360,7 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
             elif e.ShiftDown():
                 self.TransformViewModel.AutoAlignPoints(range(0, self.TransformViewModel.NumPoints))
 
-            pyre.history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
+            history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
         elif symbol == 'l':
             self.ShowLines = not self.ShowLines
         elif keycode == wx.WXK_F1:
@@ -374,12 +372,23 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
                 LookAt = self.TransformViewModel.Transform.Transform([LookAt])
                 LookAt = LookAt[0]
 
-            pyre.SyncWindows(LookAt, self.camera.scale)
+            # pyre.SyncWindows(LookAt, self.camera.scale)
 
         elif symbol == 'z' and e.CmdDown():
-            pyre.history.Undo()
+            history.Undo()
         elif symbol == 'x' and e.CmdDown():
-            pyre.history.Redo()
+            history.Redo()
+
+    def lookatfixedpoint(self, point, scale):
+        '''specify a point to look at in fixed space'''
+
+        if not self.FixedSpace:
+            point = self.TransformViewModel.Transform.InverseTransform([point])
+            point = point[0]
+
+        self.camera.x = point[0]
+        self.camera.y = point[1]
+        self.camera.scale = scale
 
     def update(self, dt):
         pass
@@ -487,8 +496,8 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
                 rangle = -rangle
 
            # print "Angle: " + str(angle)
-            self.TransformViewModel.RotateWarped(rangle, (pyre.currentConfig.WarpedImageViewModel.RawImageSize[0] / 2.0,
-                                                          pyre.currentConfig.WarpedImageViewModel.RawImageSize[1] / 2.0))
+            self.TransformViewModel.RotateWarped(rangle, (currentConfig.WarpedImageViewModel.RawImageSize[0] / 2.0,
+                                                          currentConfig.WarpedImageViewModel.RawImageSize[1] / 2.0))
 
         else:
             zdelta = (1 + (-scroll_y / 20))
@@ -523,10 +532,10 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
                 if e.AltDown():
                     self.TransformViewModel.AutoAlignPoints(self.SelectedPointIndex)
 
-                pyre.history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
+                history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
             elif e.RightDown():
                 self.TransformViewModel.TryDeletePoint(ImageX, ImageY, self.SelectionMaxDistance, FixedSpace=self.FixedSpace)
-                pyre.history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
+                history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
 
         elif e.LeftDown():
             if e.AltDown() and not self.HighlightedPointIndex is None:

@@ -12,14 +12,14 @@ import scipy.spatial
 import pyglet.gl as gl
 from nornir_imageregistration.transforms import *
 
-import ImageTransformView
+import imagetransformview
 
 import pyglet
 
 import os
-import pyre
+import resources
 
-class CompositeTransformView(ImageTransformView.ImageTransformView):
+class CompositeTransformView(imagetransformview.ImageTransformView):
     '''
     Combines and image and a transform to render an image
     '''
@@ -50,9 +50,9 @@ class CompositeTransformView(ImageTransformView.ImageTransformView):
         self.TransformViewModel = Transform
         self.ForwardTransform = False
 
-        imageFullPath = os.path.join(pyre.ResourcePath(), "Point.png")
-        self.PointImage = pyglet.image.load(imageFullPath)
-        self.SelectedPointImage = pyglet.image.load(os.path.join(pyre.ResourcePath(), "SelectedPoint.png"))
+        # imageFullPath = os.path.join(resources.ResourcePath(), "Point.png")
+        # self.PointImage = pyglet.image.load(imageFullPath)
+        # self.SelectedPointImage = pyglet.image.load(os.path.join(resources.ResourcePath(), "SelectedPoint.png"))
 
         # Valid Values are 'Add' and 'Subtract'
         self.ImageMode = 'Add'

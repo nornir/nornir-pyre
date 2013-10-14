@@ -10,6 +10,8 @@ from imageviewmodel import ImageViewModel
 from transformviewmodel import TransformViewModel
 import os
 
+# app = wx.App(False)
+currentConfig = None
 
 class Configuration(object):
 
@@ -177,6 +179,7 @@ class Configuration(object):
             else:
                 print "Could not find fixed image: " + obj.MappedImageFullPath
 
+currentConfig = Configuration()
 
 if __name__ == '__main__':
     pass

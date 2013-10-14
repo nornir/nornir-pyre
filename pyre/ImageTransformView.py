@@ -22,7 +22,7 @@ from transformviewmodel import TransformViewModel
 
 import time
 
-import pyre
+import resources
 
 
 class RenderCache(object):
@@ -68,6 +68,43 @@ class ImageTransformView(object):
             self._TransformViewModel.AddOnChangeEventListener(self.OnTransformChanged)
         self.OnTransformChanged()
 
+    @property
+    def PointImage(self):
+        if self.__pointImage is None:
+            self.LoadTextures()
+
+        return self.__pointImage
+
+    @property
+    def SelectedPointImage(self):
+        if self.__selectedPointImage is None:
+            self.LoadTextures()
+
+        return self.__selectedPointImage
+
+    @property
+    def PointGroup(self):
+        if self.__pointGroup is None:
+            self.LoadTextures()
+
+        return self.__pointGroup
+
+    @property
+    def SelectedPointSpriteOn(self):
+        if self.__selectedPointSpriteOn is None:
+            self.LoadTextures()
+
+        return self.__selectedPointSpriteOn
+
+    @property
+    def SelectedPointSpriteOff(self):
+        if self.__selectedPointSpriteOff is None:
+            self.LoadTextures()
+
+        return self.__selectedPointSpriteOff
+
+
+
     def __init__(self, ImageViewModel, TransformViewModel=None, ForwardTransform=True):
         '''
         Constructor
@@ -79,21 +116,32 @@ class ImageTransformView(object):
         self._ImageViewModel = ImageViewModel
         self.TransformViewModel = TransformViewModel
 
-       # print "Pyre resource path: " + ResourcePath()
-
-        self.PointImage = pyglet.image.load(os.path.join(pyre.ResourcePath(), "Point.png"))
-        self.PointImage.anchor_x = self.PointImage.width / 2
-        self.PointImage.anchor_y = self.PointImage.height / 2
-        self.SelectedPointImage = pyglet.image.load(os.path.join(pyre.ResourcePath(), "SelectedPoint.png"));
-        self.SelectedPointImage.anchor_x = self.SelectedPointImage.width / 2
-        self.SelectedPointImage.anchor_y = self.SelectedPointImage.height / 2
-
 
         self.Debug = False
 
-        self.PointGroup = pyglet.sprite.SpriteGroup(texture=self.PointImage.get_texture(), blend_src=pyglet.gl.GL_SRC_ALPHA, blend_dest=pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
-        self.SelectedPointSpriteOn = pyglet.sprite.Sprite(self.SelectedPointImage, 0, 0)
-        self.SelectedPointSpriteOff = pyglet.sprite.Sprite(self.PointImage, 0, 0)
+        self.__pointImage = None
+        self.__selectedPointImage = None
+        self.__pointGroup = None
+        self.__selectedPointSpriteOn = None
+        self.__selectedPointSpriteOff = None
+
+
+       # print "Pyre resource path: " + ResourcePath()
+
+
+
+    def LoadTextures(self):
+        self.__pointImage = pyglet.image.load(os.path.join(resources.ResourcePath(), "Point.png"))
+        self.__pointImage.anchor_x = self.PointImage.width / 2
+        self.__pointImage.anchor_y = self.PointImage.height / 2
+        self.__selectedPointImage = pyglet.image.load(os.path.join(resources.ResourcePath(), "SelectedPoint.png"));
+        self.__selectedPointImage.anchor_x = self.SelectedPointImage.width / 2
+        self.__selectedPointImage.anchor_y = self.SelectedPointImage.height / 2
+
+
+        self.__pointGroup = pyglet.sprite.SpriteGroup(texture=self.PointImage.get_texture(), blend_src=pyglet.gl.GL_SRC_ALPHA, blend_dest=pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
+        self.__selectedPointSpriteOn = pyglet.sprite.Sprite(self.SelectedPointImage, 0, 0)
+        self.__selectedPointSpriteOff = pyglet.sprite.Sprite(self.PointImage, 0, 0)
 
     def OnTransformChanged(self):
 
