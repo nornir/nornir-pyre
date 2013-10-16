@@ -26,8 +26,7 @@ if __name__ == '__main__':
                          "pyglet",
                          "nornir_pools",
                          "nornir_shared",
-                         "nornir_imageregistration",
-                         "wxPython"]
+                         "nornir_imageregistration"]
 
     dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools",
                         "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared",
@@ -45,7 +44,7 @@ if __name__ == '__main__':
     if sys.platform == "win32":
         base = "Win32GUI"
 
-    entry_points = {'gui_scripts' : ['pyre = pyre.common:Run']}
+    entry_points = {'gui_scripts' : ['pyre_win = pyre.common:Run']}
 
     # setup(data_files=data_files, console=['Pyre.py'])
     setup(name="pyre",

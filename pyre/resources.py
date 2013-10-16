@@ -12,18 +12,21 @@ import logging
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
+from pkg_resources import resource_filename
 
-def PackagePath():
-    try:
-        path = os.path.dirname(__file__)
-    except:
-        path = os.getcwd()
-
-    return path
+# def ConfigDataPath():
+#    return resource_filename(__name__, 'config')
+#     try:
+#         path = os.path.dirname(__file__)
+#     except:
+#         path = os.getcwd()
+#
+#     return path
 
 def ResourcePath():
     Logger = logging.getLogger("resources")
-    rpath = os.path.join(PackagePath(), 'resources')
+    rpath = resource_filename(__name__, "resources")
+    # rpath = os.path.join(PackagePath(), 'resources')
     Logger.info('Resources path: ' + rpath)
     return rpath
 
@@ -31,7 +34,9 @@ def ResourcePath():
 def README():
     '''Returns README.txt file as a string'''
 
-    readmePath = os.path.join(PackagePath(), "readme.txt")
+    readmePath = resource_filename(__name__, "readme.txt")
+
+    # readmePath = os.path.join(PackagePath(), "readme.txt")
     if not os.path.exists(readmePath):
         return "No readme.txt was found in " + readmePath
 

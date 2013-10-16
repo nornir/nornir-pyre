@@ -1,3 +1,5 @@
+Pyre was written by James Anderson and Drew Ferrell.
+
 Mouse:
 
 Left Button:
