@@ -34,7 +34,7 @@ def ResourcePath():
 def README():
     '''Returns README.txt file as a string'''
 
-    readmePath = resource_filename(__name__, "readme.txt")
+    readmePath = resource_filename(__name__, "README.txt")
 
     # readmePath = os.path.join(PackagePath(), "readme.txt")
     if not os.path.exists(readmePath):

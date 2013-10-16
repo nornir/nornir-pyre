@@ -1,5 +1,3 @@
-Pyre was written by James Anderson and Drew Ferrell.
-
 Mouse:
 
 Left Button:
@@ -31,4 +29,6 @@ Keys:
 	Ctrl+X to redo a step
 
 	Tab: Change properties of the view.  A warped image may be displayed as it appears registered.  The composite view will switch to a different view.
-	
+
+
+Pyre was written by James Anderson and Drew Ferrell	
