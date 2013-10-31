@@ -28,7 +28,7 @@ if __name__ == '__main__':
                          "nornir_shared",
                          "nornir_imageregistration",
                          "PyOpenGL>=3.0",
-                         "PyOpenGL_accelerate"]
+                         "pillow"]
 
     dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools",
                         "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared",
