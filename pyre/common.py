@@ -105,7 +105,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
                             fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea)
 
-    fixedImageROI = assemble.__WarpedImageUsingCoords(currentConfig.FixedImageViewModel.Image, FixedBotLeft, alignmentArea)
+    fixedImageROI = assemble.__ExtractRegion(currentConfig.FixedImageViewModel.Image, FixedBotLeft, alignmentArea)
 
     # core.ShowGrayscale([fixedImageROI, warpedImageROI])
 
