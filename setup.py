@@ -24,13 +24,13 @@ if __name__ == '__main__':
                          "scipy>=0.12",
                          "matplotlib",
                          "pyglet",
-                         "nornir_pools>=1.0.1",
+                         "nornir_pools>=1.0.2",
                          "nornir_shared",
                          "nornir_imageregistration>=1.0.1",
                          "PyOpenGL>=3.0",
                          "pillow"]
 
-    dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools-1.0.1",
+    dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools-1.0.2",
                         "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared",
                         "git+http://github.com/jamesra/nornir-imageregistration#egg=nornir_imageregistration-1.0.1"]
 
