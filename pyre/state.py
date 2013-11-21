@@ -4,7 +4,7 @@ Created on Oct 24, 2012
 @author: u0490822
 '''
 import numpy
-from nornir_imageregistration.io.stosfile import StosFile
+from nornir_imageregistration.files.stosfile import StosFile
 import nornir_imageregistration.transforms.factory as factory
 from imageviewmodel import ImageViewModel
 from transformviewmodel import TransformViewModel
