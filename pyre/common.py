@@ -74,13 +74,17 @@ def SyncWindows(LookAt, scale):
     Windows['Warped'].imagepanel.camera.scale = scale
 
 
-def RotateTranslateWarpedImage():
+def RotateTranslateWarpedImage(LimitImageSize=False):
     from state import currentConfig
+
+    largestdimension = 2047
+    if LimitImageSize:
+        largestdimension = 818
 
     if not (currentConfig.FixedImageViewModel is None or currentConfig.WarpedImageViewModel is None):
         alignRecord = stos.SliceToSliceBruteForce(currentConfig.FixedImageViewModel.Image,
                                                                  currentConfig.WarpedImageViewModel.Image,
-                                                                  LargestDimension=818)
+                                                                  LargestDimension=largestdimension)
         # alignRecord = IrTools.alignment_record.AlignmentRecord((22.67, -4), 100, -132.5)
         print "Alignment found: " + str(alignRecord)
         transform = alignRecord.ToTransform(currentConfig.FixedImageViewModel.RawImageSize,
