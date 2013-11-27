@@ -5,7 +5,7 @@ if not hasattr(sys, 'frozen'):
 import wx
 
 import os
-from nornir_imageregistration.io.stosfile import StosFile
+from nornir_imageregistration.files.stosfile import StosFile
 import nornir_imageregistration.transforms.factory
 import pygletwx
 import imagetransformpanel
