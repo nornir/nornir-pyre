@@ -20,25 +20,24 @@ if __name__ == '__main__':
     # data_files.append(("Microsoft.VC90.CRT", ['msvcp90.dll']))
     # data_files.append(("", glob(r'*.png')))
 
-    required_packages = ["numpy>=1.7.1",
-                         "scipy>=0.12",
+    required_packages = ["numpy>=1.8",
+                         "scipy>=0.13.2",
                          "matplotlib",
                          "pyglet",
-                         "nornir_pools>=1.0.2",
-                         "nornir_shared>=1.0.1",
-                         "nornir_imageregistration>=1.0.2",
+                         "nornir_pools>=1.1.0",
+                         "nornir_shared>=1.1.0",
+                         "nornir_imageregistration>=1.1.0",
                          "PyOpenGL>=3.0",
-                         "pillow"]
+                         "pillow>=2.3"]
 
-    dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools-1.0.2",
-                        "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared-1.0.1",
-                        "git+http://github.com/jamesra/nornir-imageregistration#egg=nornir_imageregistration-1.0.2"]
+    dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools-1.1.0",
+                        "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared-1.1.0",
+                        "git+http://github.com/jamesra/nornir-imageregistration#egg=nornir_imageregistration-1.1.0"]
 
 
 
     includes = []
     packages = ['pyre']
-
 
     # GUI applications require a different base on Windows (the default is for a
     # console application).
@@ -50,7 +49,7 @@ if __name__ == '__main__':
 
     # setup(data_files=data_files, console=['Pyre.py'])
     setup(name="pyre",
-          version="1.0.0",
+          version="1.1.0",
           scripts=['scripts/start_pyre.py'],
           entry_points=entry_points,
           data_files=data_files,
