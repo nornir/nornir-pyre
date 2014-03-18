@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     # setup(data_files=data_files, console=['Pyre.py'])
     setup(name="pyre",
-          version="1.1.0",
+          version="1.1.3",
           scripts=['scripts/start_pyre.py'],
           entry_points=entry_points,
           data_files=data_files,

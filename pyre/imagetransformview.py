@@ -15,8 +15,7 @@ import pyglet
 
 import pyglet.gl as gl
 from nornir_imageregistration.transforms import *
-
-from nornir_imageregistration.geometry.rectangle import Rectangle
+import nornir_imageregistration.spatial
 
 from transformviewmodel import TransformViewModel
 
@@ -312,7 +311,7 @@ class ImageTransformView(object):
 
                 # Check bounding box if it exists
                 if not BoundingBox is None:
-                    if not Rectangle.contains(BoundingBox, [x, y, x + w, y + h]):
+                    if not nornir_imageregistration.spatial.Rectangle.contains(BoundingBox, [y, x, y + h, x + w]):
                         continue
 
                 array = None
@@ -404,8 +403,8 @@ class ImageTransformView(object):
                         FixedCorners = self.TransformViewModel.InverseTransform(WarpedCorners)
 
                     # Check if the corners are outside the bounds
-                    tileBorder = [numpy.min(FixedCorners[:, 1]), numpy.min(FixedCorners[:, 0]), numpy.max(FixedCorners[:, 1]), numpy.max(FixedCorners[:, 0])]
-                    if not Rectangle.contains(BoundingBox, tileBorder):
+                    tileBorder = nornir_imageregistration.spatial.PointBoundingBox(FixedCorners)
+                    if not nornir_imageregistration.spatial.Rectangle.contains(BoundingBox, tileBorder):
                         continue
 
                     TilePointPairs = numpy.concatenate([WarpedCorners, FixedCorners], 1)
