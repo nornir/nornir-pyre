@@ -134,7 +134,7 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
             self.camera = None
 
 
-    def __init__(self, parent, id= -1, TransformViewModel=None, ImageTransformView=None, FixedSpace=None, composite=False, **kwargs):
+    def __init__(self, parent, id=-1, TransformViewModel=None, ImageTransformView=None, FixedSpace=None, composite=False, **kwargs):
         '''
         Constructor
         '''
@@ -369,7 +369,7 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
             LookAt = [self.camera.x, self.camera.y]
 
             if not self.FixedSpace and self.ShowWarped:
-                LookAt = self.TransformViewModel.Transform.Transform([LookAt])
+                LookAt = self.TransformViewModel.Transform([LookAt])
                 LookAt = LookAt[0]
 
             # pyre.SyncWindows(LookAt, self.camera.scale)
@@ -400,12 +400,13 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
                 self.camera.focus(self.width, self.height)
             except:
                 pass
+
     def VisibleImageBoundingBox(self):
 
         (left, bottom) = self.ImageCoordsForMouse(0, 0)
         (right, top) = self.ImageCoordsForMouse(self.width, self.height)
 
-        return [left, bottom, right, top]
+        return [bottom, left, top, right]
 
 
 

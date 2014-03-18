@@ -84,7 +84,8 @@ def RotateTranslateWarpedImage(LimitImageSize=False):
     if not (currentConfig.FixedImageViewModel is None or currentConfig.WarpedImageViewModel is None):
         alignRecord = stos.SliceToSliceBruteForce(currentConfig.FixedImageViewModel.Image,
                                                                  currentConfig.WarpedImageViewModel.Image,
-                                                                  LargestDimension=largestdimension)
+                                                                  LargestDimension=largestdimension,
+                                                                  Cluster=False)
         # alignRecord = IrTools.alignment_record.AlignmentRecord((22.67, -4), 100, -132.5)
         print "Alignment found: " + str(alignRecord)
         transform = alignRecord.ToTransform(currentConfig.FixedImageViewModel.RawImageSize,
@@ -120,7 +121,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     # apoint = core.FindOffset(fixedImageROI, warpedImageROI, MinOverlap=0.2)
 
     anglesToSearch = currentConfig.AnglesToSearch
-    apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25)
+    apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25, Cluster=False)
 
     print("Auto-translate result: " + str(apoint))
     return apoint

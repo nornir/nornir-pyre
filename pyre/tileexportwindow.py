@@ -22,10 +22,10 @@ class TileExportWindow(window.Window):
         Constructor
         '''
 
-        super(TileExportWindow, self).__init__(visible = False, **kwargs);
+        super(TileExportWindow, self).__init__(visible=False, **kwargs);
 
 
-    def FetchTile(self, View, LookAt, ShowWarped, Filename, Tilesize = None, Scale = None):
+    def FetchTile(self, View, LookAt, ShowWarped, Filename, Tilesize=None, Scale=None):
 
         if Tilesize is None:
             Tilesize = [256, 256];
@@ -38,14 +38,14 @@ class TileExportWindow(window.Window):
         self.width = Tilesize[0];
         self.height = Tilesize[1];
 
-        self.camera = Camera.Camera(position = LookAt, scale = Scale);
+        self.camera = Camera.Camera(position=LookAt, scale=Scale);
 
         boundingBox = self.VisibleImageBoundingBox();
 
         self.clear()
         self.camera.focus(self.width, self.height);
 
-        View.draw_textures(BoundingBox = boundingBox, ShowWarped = ShowWarped)
+        View.draw_textures(BoundingBox=boundingBox, ShowWarped=ShowWarped)
 
 
         imageBuffer = image.get_buffer_manager().get_color_buffer().get_image_data();
@@ -56,10 +56,10 @@ class TileExportWindow(window.Window):
             # Turns out it was an earlier call to flip was wiping out the buffer
             # time.sleep(0.5);
 
-        data = imageBuffer.get_data(format = imageBuffer.format, pitch = imageBuffer.pitch)
+        data = imageBuffer.get_data(format=imageBuffer.format, pitch=imageBuffer.pitch)
         components = map(int, list(data));
 
-        rawData = numpy.array(components, dtype = numpy.int8);
+        rawData = numpy.array(components, dtype=numpy.int8);
 
         # The raw dat
 
@@ -87,5 +87,5 @@ class TileExportWindow(window.Window):
         (left, bottom) = self.ImageCoordsForMouse(0, 0);
         (right, top) = self.ImageCoordsForMouse(self.width, self.height);
 
-        return [left, bottom, right, top];
+        return [bottom, left, top, right];
 
