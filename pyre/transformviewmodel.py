@@ -98,12 +98,12 @@ class  TransformViewModel(object):
             self._TransformModel.AddOnChangeEventListener(self.OnTransformChanged)
 
 
-    def Transform(self, points):
-        return self.TransformModel.Transform(points)
+    def Transform(self, points, **kwargs):
+        return self.TransformModel.Transform(points, **kwargs)
 
 
-    def InverseTransform(self, points):
-        return self.TransformModel.InverseTransform(points)
+    def InverseTransform(self, points, **kwargs):
+        return self.TransformModel.InverseTransform(points, **kwargs)
 
 
     def AddOnChangeEventListener(self, func):
@@ -322,33 +322,58 @@ class  TransformViewModel(object):
            currentConfig.WarpedImageViewModel is None):
             return
 
-        pool = Pools.GetGlobalThreadPool()
-
         if not isinstance(i_points, list):
             i_points = [i_points]
-
-        indextotask = {}
-        for i_point in i_points:
-            fixed = self.GetFixedPoint(i_point)
-            warped = self.GetWarpedPoint(i_point)
-
-            task = pool.add_task(i_point, common.AttemptAlignPoint,
-                                            self,
-                                            currentConfig.FixedImageViewModel.Image,
-                                            currentConfig.WarpedImageViewModel.Image,
-                                            fixed,
-                                            warped)
-            indextotask[i_point] = task
-
+            
         offsets = np.zeros((self.NumPoints, 2))
 
-        for i_point in indextotask:
-            task = indextotask[i_point]
-            record = task.wait_return()
-
+        indextotask = {}
+        if len(i_points) > 1:
+            pool = Pools.GetGlobalThreadPool()
+            
+            for i_point in i_points:
+                fixed = self.GetFixedPoint(i_point)
+                warped = self.GetWarpedPoint(i_point)
+                
+                
+    
+                task = pool.add_task(i_point, common.AttemptAlignPoint,
+                                                self,
+                                                currentConfig.FixedImageViewModel.Image,
+                                                currentConfig.WarpedImageViewModel.Image,
+                                                fixed,
+                                                warped)
+                indextotask[i_point] = task
+    
+            
+    
+            for i_point in indextotask:
+                task = indextotask[i_point]
+                record = task.wait_return()
+    
+                if record is None:
+                    print "point #" + str(i_point) + " returned None for alignment"
+                    continue
+    
+                (dy, dx) = record.peak
+    
+                if math.isnan(dx) or math.isnan(dy):
+                    continue
+    
+                offsets[i_point, :] = np.array([dy, dx])
+        else:
+            i_point = i_points[0]
+            fixed = self.GetFixedPoint(i_point)
+            warped = self.GetWarpedPoint(i_point)
+            record = common.AttemptAlignPoint(self,
+                                     currentConfig.FixedImageViewModel.Image,
+                                     currentConfig.WarpedImageViewModel.Image,
+                                     fixed,
+                                     warped)
+            
             if record is None:
                 print "point #" + str(i_point) + " returned None for alignment"
-                continue
+                return
 
             (dy, dx) = record.peak
 
@@ -356,7 +381,8 @@ class  TransformViewModel(object):
                 return
 
             offsets[i_point, :] = np.array([dy, dx])
-
+            
+            
         # Translate all points
         self.TranslateFixed(offsets)
 
