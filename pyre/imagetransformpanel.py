@@ -536,6 +536,9 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
                 history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
             elif e.RightDown():
                 self.TransformViewModel.TryDeletePoint(ImageX, ImageY, self.SelectionMaxDistance, FixedSpace=self.FixedSpace)
+                if self.SelectedPointIndex > self.TransformViewModel.NumPoints:
+                    self.SelectedPointIndex = self.TransformViewModel.NumPoints - 1
+
                 history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
 
         elif e.LeftDown():

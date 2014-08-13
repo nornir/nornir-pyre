@@ -24,15 +24,15 @@ if __name__ == '__main__':
                          "scipy>=0.13.2",
                          "matplotlib",
                          "pyglet",
-                         "nornir_pools>=1.1.5",
-                         "nornir_shared>=1.1.5",
-                         "nornir_imageregistration>=1.1.5",
+                         "nornir_pools>=1.2.1",
+                         "nornir_shared>=1.2.1",
+                         "nornir_imageregistration>=1.2.1",
                          "PyOpenGL>=3.0",
                          "pillow>=2.3"]
 
-    dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools-1.1.5",
-                        "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared-1.1.5",
-                        "git+http://github.com/jamesra/nornir-imageregistration#egg=nornir_imageregistration-1.1.5"]
+    dependency_links = ["git+http://github.com/jamesra/nornir-pools#egg=nornir_pools-1.2.1",
+                        "git+http://github.com/jamesra/nornir-shared#egg=nornir_shared-1.2.1",
+                        "git+http://github.com/jamesra/nornir-imageregistration#egg=nornir_imageregistration-1.2.1"]
 
 
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     # setup(data_files=data_files, console=['Pyre.py'])
     setup(name="pyre",
-          version="1.1.5",
+          version="1.2.1",
           scripts=['scripts/start_pyre.py'],
           entry_points=entry_points,
           data_files=data_files,
