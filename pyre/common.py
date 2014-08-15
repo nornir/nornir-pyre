@@ -108,7 +108,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
 
     # Pull image subregions
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
-                            fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea)
+                            fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea, extrapolate=True)
 
     fixedImageROI = assemble.ExtractRegion(currentConfig.FixedImageViewModel.Image, FixedBotLeft, alignmentArea)
 

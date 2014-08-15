@@ -403,7 +403,7 @@ class ImageTransformView(object):
                         FixedCorners = self.TransformViewModel.InverseTransform(WarpedCorners)
 
                     # Check if the corners are outside the bounds
-                    tileBorder = nornir_imageregistration.spatial.PointBoundingBox(FixedCorners)
+                    tileBorder = nornir_imageregistration.spatial.BoundsArrayFromPoints(FixedCorners)
                     if not nornir_imageregistration.spatial.Rectangle.contains(BoundingBox, tileBorder):
                         continue
 

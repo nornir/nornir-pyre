@@ -168,7 +168,7 @@ class Configuration(object):
             if os.path.exists(nextPath):
                 self.LoadFixedImage(nextPath)
             else:
-                print "Could not find fixed image: " + obj.ControlImageFullPath
+                print("Could not find fixed image: " + obj.ControlImageFullPath)
 
         if os.path.exists(obj.MappedImageFullPath):
             self.LoadWarpedImage(obj.MappedImageFullPath)
@@ -177,7 +177,7 @@ class Configuration(object):
             if os.path.exists(nextPath):
                 self.LoadWarpedImage(nextPath)
             else:
-                print "Could not find fixed image: " + obj.MappedImageFullPath
+                print("Could not find fixed image: " + obj.MappedImageFullPath)
 
 currentConfig = Configuration()
 
