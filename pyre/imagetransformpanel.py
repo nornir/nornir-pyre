@@ -544,6 +544,7 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         elif e.LeftDown():
             if e.AltDown() and not self.HighlightedPointIndex is None:
                 self.TransformViewModel.SetPoint(self.HighlightedPointIndex, ImageX, ImageY, FixedSpace=self.FixedSpace)
+                history.SaveState(self.TransformViewModel.SetPoints, self.TransformViewModel.points)
             else:
                 distance, index = (None, None)
                 if not self.composite:
@@ -578,15 +579,11 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         ImageDX = (float(dx) / self.width) * self.camera.ViewWidth
         ImageDY = (float(dy) / self.height) * self.camera.ViewHeight
 
-        Redraw = False
-
         if(e.RightIsDown()):
             self.camera.x = self.camera.x - ImageDX
             self.camera.y = self.camera.y - ImageDY
-            Redraw = True
 
         if(e.LeftIsDown()):
-            Redraw = True
             if e.CmdDown():
                # Translate all points
                self.TransformViewModel.TranslateFixed((ImageDY, ImageDX))
@@ -595,7 +592,6 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
                 if(not self.SelectedPointIndex is None):
                     self.SelectedPointIndex = self.TransformViewModel.MovePoint(self.SelectedPointIndex, ImageDX, ImageDY, FixedSpace=self.FixedSpace)
                 elif(e.ShiftDown()):  # The shift key is selected and we do not have a last point dragged
-                    Redraw = False
                     return
                 else:
                     # find nearest point

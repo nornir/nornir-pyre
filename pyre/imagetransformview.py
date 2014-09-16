@@ -10,6 +10,7 @@ import numpy
 import logging
 import scipy.spatial
 import os
+import math
 
 import pyglet
 
@@ -216,8 +217,15 @@ class ImageTransformView(object):
             spriteList = list()
             for i in range(0, len(verts)):
                 point = verts[i]
+                
+                #if math.isnan(point[0]) or math.isnan(point[1]):
+                #    continue
 
                 Image = self.PointImage
+                if math.isnan(point[0]) or math.isnan(point[1]):
+                    continue 
+                
+
                 if SelectedIndex is not None:
                     if(i == SelectedIndex and  time.time() % 1 > .5):
                         Image = self.SelectedPointImage
