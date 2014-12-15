@@ -135,7 +135,7 @@ class MyFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, self.OnRight2WindowView, submenuWindow5)
             self.Bind(wx.EVT_MENU, self.On3WindowView, submenuWindow6)
 
-            menu.AppendMenu(wx.ID_ANY, "&Two Window Options", windowSubMenu)
+            menu.AppendMenu(wx.ID_ANY, "&Multiple display options", windowSubMenu)
 
         self.menuShowFixedImage = menu.Append(wx.ID_ANY, "&Fixed Image", kind=wx.ITEM_CHECK)
         menu.Check(self.menuShowFixedImage.GetId(), True)
