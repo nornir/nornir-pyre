@@ -5,9 +5,10 @@ Created on Oct 24, 2012
 '''
 import numpy
 from nornir_imageregistration.files.stosfile import StosFile
+from nornir_imageregistration.mosaic import Mosaic
 import nornir_imageregistration.transforms.factory as factory
-from imageviewmodel import ImageViewModel
-from transformviewmodel import TransformViewModel
+from pyre.viewmodels.imageviewmodel import ImageViewModel
+from pyre.viewmodels.transformviewmodel import TransformViewModel
 import os
 
 # app = wx.App(False)
@@ -117,6 +118,7 @@ class Configuration(object):
 
 
     def LoadTransform(self, StosData):
+        ''':return: A Transform'''
 
         obj = None
         if isinstance(StosData, str):
@@ -151,8 +153,18 @@ class Configuration(object):
             self.FixedImageViewModel = ivm
         else:
             self.WarpedImageViewModel = ivm
-
-
+        
+            
+    def LoadMosaic(self, mosaicFullPath):
+        dirname = os.path.dirname(mosaicFullPath)
+        filename = os.path.basename(mosaicFullPath)
+        
+        mosaic = Mosaic.LoadFromMosaicFile(mosaicFullPath)
+        
+        listImageViews = []
+        
+ #       for filename, transform in mosaic.ImageToTransform.items():
+ 
     def LoadStos(self, stosFullPath):
 
         dirname = os.path.dirname(stosFullPath)

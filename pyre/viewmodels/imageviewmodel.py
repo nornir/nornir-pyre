@@ -26,6 +26,9 @@ class ImageViewModel(object):
     '''
     Represents a numpy image as a series of tiles
     '''
+    
+    #The largest dimension we allow a texture to have
+    MaxTextureDimension = int(2048)
 
     @property
     def Image(self):
@@ -53,17 +56,17 @@ class ImageViewModel(object):
 
     @property
     def shape(self):
-        return (self._height, self._width)
-
-    @property
-    def TextureSize(self):
-        return self._TextureSize
+        return (self._height, self._width)   
 
     @property
     def ImageArray(self):
         if self._ImageArray is None:
             self._ImageArray = self.CreateImageArray()
         return self._ImageArray
+    
+    @property
+    def TextureSize(self):
+        return (ImageViewModel.MaxTextureDimension, ImageViewModel.MaxTextureDimension)
 
 
     @property
@@ -78,8 +81,7 @@ class ImageViewModel(object):
         # self._TileSize = (int(1024), int(1024))
         # self.TextureHeight = int(math.pow(2, math.ceil(math.log(self.height, 2))))
         # self.TextureWidth = int(math.pow(2, math.ceil(math.log(self.width, 2))))
-        self._ImageFilename = None
-        self._TextureSize = (int(1024), int(1024))
+        self._ImageFilename = None 
 
         # self.ViewTransform = transform
 
@@ -106,10 +108,10 @@ class ImageViewModel(object):
         # self._Image = core.npArrayToReadOnlySharedArray(self._Image)
 
         self.RawImageSize = self._Image.shape
-        self._NumCols = int(math.ceil(self._Image.shape[1] / float(self.TextureSize[1])))
-        self._NumRows = int(math.ceil(self._Image.shape[0] / float(self.TextureSize[0])))
+        self._NumCols = int(math.ceil(self._Image.shape[1] / float(ImageViewModel.MaxTextureDimension)))
+        self._NumRows = int(math.ceil(self._Image.shape[0] / float(ImageViewModel.MaxTextureDimension)))
 
-        self._height, self._width = self.NumRows * self._TextureSize[0], self.NumCols * self._TextureSize[1]
+        self._height, self._width = self.NumRows * ImageViewModel.MaxTextureDimension, self.NumCols * ImageViewModel.MaxTextureDimension
 
         self._ImageArray = None
 
@@ -140,25 +142,24 @@ class ImageViewModel(object):
         '''Create a texture for the tile at given coordinates'''
         return
 
-    def CreateImageArray(self):
 
+    def CreateImageArray(self):
+        '''
+        Generate an array of textures when images are larger than the max texture size
+        '''
         # from Pools import Threadpool
 
         Logger.info("CreateImageArray")
         # Round up size to nearest power of 2
-
-
+ 
         TextureGrid = list()
 
-        tile = numpy.zeros(self.TextureSize)
-
-        TaskList = []
         print('\nConverting image to ' + str(self.NumCols) + "x" + str(self.NumRows) + ' grid of OpenGL textures')
-        for iX in range(0, self.width, int(self.TextureSize[1])):
+        for iX in range(0, self.width, ImageViewModel.MaxTextureDimension):
             columnTextures = list()
-            lastCol = iX + self.TextureSize[1] > self.width
+            lastCol = iX + ImageViewModel.MaxTextureDimension > self.width
 
-            end_iX = iX + self.TextureSize[1]
+            end_iX = iX + ImageViewModel.MaxTextureDimension
             pad_image = end_iX > self.Image.shape[1]
             if pad_image:
                 end_iX = self.Image.shape[1]
@@ -166,12 +167,12 @@ class ImageViewModel(object):
 
             sys.stdout.write('\n')
             # print "ix " + str(iX)
-            for iY in range(0, self.height, int(self.TextureSize[0])):
+            for iY in range(0, self.height, ImageViewModel.MaxTextureDimension):
 
                 sys.stdout.write('.')
-                lastRow = iY + self.TextureSize[0] > self.height
+                lastRow = iY + ImageViewModel.MaxTextureDimension > self.height
 
-                end_iY = iY + self.TextureSize[0]
+                end_iY = iY + ImageViewModel.MaxTextureDimension
                 if end_iY > self.Image.shape[0]:
                     end_iY = self.Image.shape[0]
                     pad_image = True
@@ -182,7 +183,7 @@ class ImageViewModel(object):
 
                 temp = None
                 if pad_image:
-                    paddedImage = numpy.zeros(self.TextureSize)
+                    paddedImage = numpy.zeros([ImageViewModel.MaxTextureDimension, ImageViewModel.MaxTextureDimension])
                     paddedImage[0:end_iY - iY, 0:end_iX - iX] = self.Image[iY:end_iY, iX:end_iX]
                     temp = paddedImage
                 else:

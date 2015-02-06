@@ -5,22 +5,21 @@ Created on Oct 16, 2012
 '''
 
 
-import Camera
+from pyre.views import camera
 import math
 
 from pyglet import *
 
 import pygletwx
-import wx
-import nornir_pools as pools
-import numpy as np
+import wx  
 
-from state import currentConfig
+from pyre.state import currentConfig
 from pyre import history
 
-from transformviewmodel import TransformViewModel
-from imagetransformview import ImageTransformView
-from compositetransformview import CompositeTransformView
+import pyre.views.camera 
+from pyre.viewmodels.transformviewmodel import TransformViewModel
+from pyre.views.imagetransformview import ImageTransformView
+from pyre.views.compositetransformview import CompositeTransformView
 
 class ImageTransformViewPanel(pygletwx.GLPanel):
     '''
@@ -88,14 +87,20 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
     @property
     def ImageWidth(self):
         if not self._ImageTransformView is None:
-            return self._ImageTransformView.width
+            w = self._ImageTransformView.width
+            if w is None:
+                w = 1
+            return w
         else:
             return 1
 
     @property
     def ImageHeight(self):
         if not self._ImageTransformView is None:
-            return self._ImageTransformView.height
+            h = self._ImageTransformView.height
+            if h is None:
+                h = 1
+            return h  
         else:
             return 1
 
@@ -112,7 +117,7 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         self._camera = value
 
         if not value is None:
-            assert(isinstance(value, Camera.Camera))
+            assert(isinstance(value, camera.Camera))
             value.AddOnChangeEventListener(self.OnCameraChanged)
 
     @ImageTransformView.setter
@@ -126,12 +131,11 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         else:
             assert(isinstance(value, ImageTransformView))
 
-        (self.width, self.height) = self.canvas.GetSizeTuple()
-        try:
-
-            self.camera = Camera.Camera((self.ImageWidth / 2.0, self.ImageHeight / 2.0), max([self.ImageWidth / 2.0, self.ImageHeight / 2.0]))
-        except:
-            self.camera = None
+        (self.width, self.height) = self.canvas.GetSizeTuple() 
+        #try:
+        self.camera = camera.Camera((self.ImageWidth / 2.0, self.ImageHeight / 2.0), max([self.ImageWidth / 2.0, self.ImageHeight / 2.0]))
+        #except AttributeError:
+            #self.camera = None
 
 
     def __init__(self, parent, id=-1, TransformViewModel=None, ImageTransformView=None, FixedSpace=None, composite=False, **kwargs):
@@ -264,8 +268,6 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
                 self.ImageTransformView = CompositeTransformView(currentConfig.FixedImageViewModel,
                                                                  currentConfig.WarpedImageViewModel,
                                                                  currentConfig.TransformViewModel)
-            else:
-                self.ImageTransformView = None
         elif not self.FixedSpace:
             self.ImageTransformView = ImageTransformView(currentConfig.WarpedImageViewModel, currentConfig.TransformViewModel, ForwardTransform=True)
         else:
@@ -348,7 +350,7 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
             self.camera.y = self.camera.y + ImageDY
 
         elif keycode == wx.WXK_PAGEUP:
-            self.camera.scale = self.camera.scale * 0.9
+            self.camera.scale = self.scale * 0.9
         elif keycode == wx.WXK_PAGEDOWN:
             self.camera.scale = self.camera.scale * 1.1
         elif keycode == wx.WXK_SPACE:
@@ -396,10 +398,10 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
     def on_resize(self, e):
         (self.width, self.height) = self.canvas.GetSizeTuple()
         if not self.camera is None:
-            try:
-                self.camera.focus(self.width, self.height)
-            except:
-                pass
+            #try:
+            self.camera.focus(self.width, self.height)
+            #except:
+            #pass
 
     def VisibleImageBoundingBox(self):
 

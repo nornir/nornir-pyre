@@ -22,7 +22,7 @@ from launcher import Windows
 
 
 def SaveRegisteredWarpedImage(fileFullPath, transform, warpedImage):
-    from state import currentConfig
+    from pyre.state import currentConfig
 
     # registeredImage = assemble.WarpedImageToFixedSpace(transform, Config.FixedImageArray.Image.shape, Config.WarpedImageArray.Image)
     registeredImage = AssembleHugeRegisteredWarpedImage(transform,
@@ -75,7 +75,7 @@ def SyncWindows(LookAt, scale):
 
 
 def RotateTranslateWarpedImage(LimitImageSize=False):
-    from state import currentConfig
+    from pyre.state import currentConfig
 
     largestdimension = 2047
     if LimitImageSize:
@@ -93,12 +93,11 @@ def RotateTranslateWarpedImage(LimitImageSize=False):
         currentConfig.TransformViewModel.SetPoints(transform.points)
 
         history.SaveState(currentConfig.TransformViewModel.SetPoints, currentConfig.TransformViewModel.TransformModel.points)
-        # Config.TransformViewModel = TransformViewModel(Config.CurrentTransform)
 
 
 def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea=None):
     '''Try to use the Composite view to render the two tiles we need for alignment'''
-    from state import currentConfig
+    from pyre.state import currentConfig
 
     if alignmentArea is None:
         alignmentArea = currentConfig.AlignmentTileSize
@@ -131,7 +130,7 @@ def Run():
 
 
 if __name__ == "__main__":
-    from state import currentConfig
+    from pyre.state import currentConfig
 
     nornir_shared.misc.SetupLogging(os.curdir, Level=logging.WARNING)
 

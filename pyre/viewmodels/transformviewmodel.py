@@ -16,7 +16,7 @@ import scipy.ndimage
 import common
 import time
 import copy
-import nornir_pools as Pools
+import nornir_pools as pools
 from nornir_imageregistration.alignment_record import AlignmentRecord
 
 
@@ -127,7 +127,7 @@ class  TransformViewModel(object):
         '''Calls every function registered to be notified when the transform changes.'''
 
         # Calls every listener when the transform has changed in a way that a point may be mapped to a new position in the fixed space
-#        Pool = Pools.GetGlobalThreadPool()
+#        Pool = pools.GetGlobalThreadPool()
         # tlist = list()
         for func in self.__OnChangeEventListeners:
             func()
@@ -316,7 +316,7 @@ class  TransformViewModel(object):
 
     def AutoAlignPoints(self, i_points):
         '''Attemps to align the specified point indicies'''
-        from state import currentConfig
+        from pyre.state import currentConfig
 
         if(currentConfig.FixedImageViewModel is None or
            currentConfig.WarpedImageViewModel is None):
@@ -329,7 +329,7 @@ class  TransformViewModel(object):
 
         indextotask = {}
         if len(i_points) > 1:
-            pool = Pools.GetGlobalThreadPool()
+            pool = pools.GetGlobalThreadPool()
             
             for i_point in i_points:
                 fixed = self.GetFixedPoint(i_point)

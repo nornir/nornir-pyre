@@ -18,7 +18,7 @@ import pyglet.gl as gl
 from nornir_imageregistration.transforms import *
 import nornir_imageregistration.spatial
 
-from transformviewmodel import TransformViewModel
+from pyre.viewmodels.transformviewmodel import TransformViewModel
 
 import time
 
@@ -292,6 +292,7 @@ class ImageTransformView(object):
 
     def _draw_fixed_image(self, ImageViewModel, color, BoundingBox=None):
         '''Draw a fixed image, bounding box indicates the visible area.  Everything is drawn if BoundingBox is None'''
+        
         if hasattr(self.rendercache, 'FixedImageDataGrid'):
             FixedImageDataGrid = self.rendercache.FixedImageDataGrid
         else:
