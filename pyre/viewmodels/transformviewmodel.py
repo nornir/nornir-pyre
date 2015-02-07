@@ -23,8 +23,7 @@ from nornir_imageregistration.alignment_record import AlignmentRecord
 def _DefaultTransform(FixedShape=None, WarpedShape=None):
     # FixedSize = Utils.Images.GetImageS ize(FixedImageFullPath)
     # WarpedSize = Utils.Images.GetImageSize(WarpedImageFullPath)
-
-
+ 
     if FixedShape is None:
         FixedShape = (512, 512)
 
@@ -38,7 +37,7 @@ def _DefaultTransform(FixedShape=None, WarpedShape=None):
 
 class  TransformViewModel(object):
     '''
-    Combines and image and a transform to render an image
+    Combines an image and a transform to render an image
     '''
 
     @classmethod
@@ -49,8 +48,7 @@ class  TransformViewModel(object):
     @property
     def width(self):
         return self.TransformModel.width;
-
-
+ 
     @property
     def height(self):
         return self.TransformModel.height;
@@ -58,8 +56,7 @@ class  TransformViewModel(object):
     @property
     def NumPoints(self):
         return self.TransformModel.points.shape[0]
-
-
+ 
     @property
     def points(self):
         return copy.deepcopy(self.TransformModel.points)

@@ -24,7 +24,7 @@ Logger = logging.getLogger("ImageArray")
 
 class ImageViewModel(object):
     '''
-    Represents a numpy image as a series of tiles
+    Represents a numpy image as an array of textures
     '''
     
     #The largest dimension we allow a texture to have

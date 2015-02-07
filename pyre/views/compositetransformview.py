@@ -14,6 +14,8 @@ from nornir_imageregistration.transforms import *
  
 import imagetransformview
 
+import pyre.views
+
 import pyglet
 
 import os
@@ -118,7 +120,7 @@ class CompositeTransformView(  imagetransformview.ImageTransformView):
                 FixedCorners = self.TransformViewModel.Transform(WarpedCorners)
 
                 tri = scipy.spatial.Delaunay(FixedCorners)
-                LineIndicies = self.LineIndiciesFromTri(tri.vertices)
+                LineIndicies = pyre.views.LineIndiciesFromTri(tri.vertices)
 
                 FlatPoints = numpy.fliplr(FixedCorners).ravel().tolist()
 

@@ -5,48 +5,29 @@ Created on Oct 16, 2012
 '''
 
 
-from pyre.views import camera
+from pyre.ui import camera
 import math
 
 from pyglet import *
 
-import pygletwx
+from pyre.ui import glpanel
 import wx  
 
 from pyre.state import currentConfig
 from pyre import history
 
-import pyre.views.camera 
 from pyre.viewmodels.transformviewmodel import TransformViewModel
 from pyre.views.imagetransformview import ImageTransformView
 from pyre.views.compositetransformview import CompositeTransformView
 
-class ImageTransformViewPanel(pygletwx.GLPanel):
+import imagetransformpanelbase
+
+class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
     '''
     classdocs
     '''
     _CurrentDragPoint = None
     _HighlightedPointIndex = 0
-
-    @property
-    def NumPoints(self):
-        return self._TransformViewModel.points.shape[0]
-
-    @property
-    def anchor_x(self):
-        return self._Image.anchor_x
-
-    @anchor_x.setter
-    def anchor_x(self, value):
-        self._Image.anchor_x = value
-
-    @property
-    def anchor_y(self):
-        return self._Image.anchor_y
-
-    @anchor_y.setter
-    def anchor_y(self, value):
-        self._Image.anchor_y = value
 
     @property
     def SelectedPointIndex(self):
@@ -66,60 +47,12 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
 
     @property
     def TransformViewModel(self):
-        return self._TransformViewModel
-
-    @TransformViewModel.setter
-    def TransformViewModel(self, value):
-
-        if not self._TransformViewModel is None:
-            self._TransformViewModel.RemoveOnChangeEventListener(self.OnTransformChanged)
-
-        self._TransformViewModel = value
-
-        if not self._TransformViewModel is None:
-            assert(isinstance(value, TransformViewModel))
-            self._TransformViewModel.AddOnChangeEventListener(self.OnTransformChanged)
+        return self.ImageTransformView.TransformViewModel
 
     @property
     def ImageTransformView(self):
         return self._ImageTransformView
-
-    @property
-    def ImageWidth(self):
-        if not self._ImageTransformView is None:
-            w = self._ImageTransformView.width
-            if w is None:
-                w = 1
-            return w
-        else:
-            return 1
-
-    @property
-    def ImageHeight(self):
-        if not self._ImageTransformView is None:
-            h = self._ImageTransformView.height
-            if h is None:
-                h = 1
-            return h  
-        else:
-            return 1
-
-    @property
-    def camera(self):
-        return self._camera
-
-    @camera.setter
-    def camera(self, value):
-
-        if not self._camera is None:
-            self._camera.RemoveOnChangeEventListener(self.OnCameraChanged)
-
-        self._camera = value
-
-        if not value is None:
-            assert(isinstance(value, camera.Camera))
-            value.AddOnChangeEventListener(self.OnCameraChanged)
-
+    
     @ImageTransformView.setter
     def ImageTransformView(self, value):
 
@@ -132,10 +65,14 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
             assert(isinstance(value, ImageTransformView))
 
         (self.width, self.height) = self.canvas.GetSizeTuple() 
-        #try:
-        self.camera = camera.Camera((self.ImageWidth / 2.0, self.ImageHeight / 2.0), max([self.ImageWidth / 2.0, self.ImageHeight / 2.0]))
-        #except AttributeError:
-            #self.camera = None
+        
+        try:
+            if not value is None:
+                self.camera = camera.Camera((value.width / 2.0, value.height / 2.0), max([value.width / 2.0, value.height / 2.0]))
+        except TypeError:
+            print("Type error creating camera for ImageTransformView %s" % str(value))
+            self.camera = None
+            pass
 
 
     def __init__(self, parent, id=-1, TransformViewModel=None, ImageTransformView=None, FixedSpace=None, composite=False, **kwargs):
@@ -143,15 +80,12 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         Constructor
         '''
 
-        self._camera = None
-        self._TransformViewModel = None
+        self._camera = None 
         self._ImageTransformView = None
         self.SelectionMaxDistance = 1
 
         super(ImageTransformViewPanel, self).__init__(parent, id, **kwargs)
-
-
-        self.TransformViewModel = TransformViewModel
+ 
         self.ImageTransformView = ImageTransformView
 
         currentConfig.AddOnTransformViewModelChangeEventListener(self.OnTransformViewModelChanged)
@@ -226,25 +160,15 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         self.DebugTickCounter += 1
         self.canvas.Refresh()
         return
-
-
-    def OnTransformChanged(self):
-        self.canvas.Refresh()
-
-    def OnCameraChanged(self):
-        self.canvas.Refresh()
-
+ 
 
     def OnTransformViewModelChanged(self):
         if not self.ImageTransformView is None:
-            self.TransformViewModel = currentConfig.TransformViewModel
             self.ImageTransformView.TransformViewModel = currentConfig.TransformViewModel
 
         self.canvas.Refresh()
 
 
-    def __str__(self, *args, **kwargs):
-        return self.TopLevelParent.Label
 
     def _LabelPreamble(self):
         if self.FixedSpace:
@@ -279,11 +203,6 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
             self.glFunc = gl.GL_FUNC_SUBTRACT
         else:
             self.glFunc = gl.GL_FUNC_ADD
-
-    def GetCorrectedMousePosition(self, e):
-        '''wxPython inverts the mouse position, flip it back'''
-        (x, y) = e.GetPositionTuple()
-        return (x, self.height - y)
 
 
     def on_key_press(self, e):
@@ -387,30 +306,9 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         if not self.FixedSpace:
             point = self.TransformViewModel.Transform.InverseTransform([point])
             point = point[0]
-
-        self.camera.x = point[0]
-        self.camera.y = point[1]
-        self.camera.scale = scale
-
-    def update(self, dt):
-        pass
-
-    def on_resize(self, e):
-        (self.width, self.height) = self.canvas.GetSizeTuple()
-        if not self.camera is None:
-            #try:
-            self.camera.focus(self.width, self.height)
-            #except:
-            #pass
-
-    def VisibleImageBoundingBox(self):
-
-        (left, bottom) = self.ImageCoordsForMouse(0, 0)
-        (right, top) = self.ImageCoordsForMouse(self.width, self.height)
-
-        return [bottom, left, top, right]
-
-
+            
+        super(self, ImageTransformViewPanel).lookatfixedpoint(point, scale)
+ 
 
     def draw_objects(self):
         '''Region is [x,y,TextureWidth,TextureHeight] indicating where the image should be drawn on the window'''
@@ -505,12 +403,12 @@ class ImageTransformViewPanel(pygletwx.GLPanel):
         else:
             zdelta = (1 + (-scroll_y / 20))
             self.camera.scale = self.camera.scale * zdelta
-            if self.camera.scale > max([self.ImageWidth , self.ImageHeight ]) * 2.0:
-                self.camera.scale = max([self.ImageWidth , self.ImageHeight]) * 2.0
+            max_image_dimension_value = max([self.TransformViewModel.Width , self.TransformViewModel.Height ])
+            if self.camera.scale > max_image_dimension_value * 2.0:
+                self.camera.scale = max_image_dimension_value * 2.0
 
-            if self.camera.scale < 1:
-
-                self.camera.scale = 1.0
+            if self.camera.scale < 0.5: 
+                self.camera.scale = 0.5
 
 
     def on_mouse_release(self, e):

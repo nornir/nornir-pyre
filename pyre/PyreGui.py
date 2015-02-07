@@ -7,7 +7,7 @@ import wx
 import os
 from nornir_imageregistration.files.stosfile import StosFile
 import nornir_imageregistration.transforms.factory
-from pyre.ui import pygletwx
+from pyre.ui import glpanel
 from pyre.ui import imagetransformpanel
 import pyre
 import common
@@ -224,8 +224,7 @@ class MyFrame(wx.Frame):
 
             imageTransformView = ImageTransformView(imageViewModel,
                                                     pyre.state.currentConfig.TransformViewModel)
-
-        self.imagepanel.TransformViewModel = pyre.state.currentConfig.TransformViewModel
+ 
         self.imagepanel.ImageTransformView = imageTransformView
 
 

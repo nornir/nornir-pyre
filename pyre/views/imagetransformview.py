@@ -18,6 +18,8 @@ import pyglet.gl as gl
 from nornir_imageregistration.transforms import *
 import nornir_imageregistration.spatial
 
+import pyre.views
+
 from pyre.viewmodels.transformviewmodel import TransformViewModel
 
 import time
@@ -104,7 +106,6 @@ class ImageTransformView(object):
         return self.__selectedPointSpriteOff
 
 
-
     def __init__(self, ImageViewModel, TransformViewModel=None, ForwardTransform=True):
         '''
         Constructor
@@ -123,12 +124,7 @@ class ImageTransformView(object):
         self.__selectedPointImage = None
         self.__pointGroup = None
         self.__selectedPointSpriteOn = None
-        self.__selectedPointSpriteOff = None
-
-
-       # print "Pyre resource path: " + ResourcePath()
-
-
+        self.__selectedPointSpriteOff = None 
 
     def LoadTextures(self):
         self.__pointImage = pyglet.image.load(os.path.join(resources.ResourcePath(), "Point.png"))
@@ -137,8 +133,7 @@ class ImageTransformView(object):
         self.__selectedPointImage = pyglet.image.load(os.path.join(resources.ResourcePath(), "SelectedPoint.png"));
         self.__selectedPointImage.anchor_x = self.SelectedPointImage.width / 2
         self.__selectedPointImage.anchor_y = self.SelectedPointImage.height / 2
-
-
+ 
         self.__pointGroup = pyglet.sprite.SpriteGroup(texture=self.PointImage.get_texture(), blend_src=pyglet.gl.GL_SRC_ALPHA, blend_dest=pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
         self.__selectedPointSpriteOn = pyglet.sprite.Sprite(self.SelectedPointImage, 0, 0)
         self.__selectedPointSpriteOff = pyglet.sprite.Sprite(self.PointImage, 0, 0)
@@ -198,13 +193,13 @@ class ImageTransformView(object):
                     s.x = point[1]
                     s.y = point[0]
                     s.scale = scale
+                    s.image = self.PointImage
 
                     if SelectedIndex is not None:
                         if i == SelectedIndex:
                             if(time.time() % 1 > 0.5):
                                 s.image = self.SelectedPointImage
-                            else:
-                                s.image = self.PointImage
+                                
 
                 PointBatch.draw()
             except:
@@ -254,7 +249,8 @@ class ImageTransformView(object):
 
         self._draw_points(verts, SelectedIndex, BoundingBox, ScaleFactor)
 
-    def draw_lines(self,):
+
+    def draw_lines(self):
         if(self.TransformViewModel is None):
             return
 
@@ -266,29 +262,8 @@ class ImageTransformView(object):
         else:
             verts = numpy.fliplr(self.TransformViewModel.FixedPoints)
             Triangles = self.TransformViewModel.FixedTriangles
-
-        LineIndicies = []
-        for tri in Triangles:
-            LineIndicies.append(tri[0])
-            LineIndicies.append(tri[1])
-            LineIndicies.append(tri[1])
-            LineIndicies.append(tri[2])
-            LineIndicies.append(tri[2])
-            LineIndicies.append(tri[0])
-
-        zCoords = numpy.zeros((len(verts), 1), dtype=verts.dtype)
-        Points = numpy.hstack((verts, zCoords))
-
-        FlatPoints = Points.ravel().tolist()
-        vertarray = (gl.GLfloat * len(FlatPoints))(*FlatPoints)
-
-        gl.glDisable(gl.GL_TEXTURE_2D)
-        pyglet.gl.glColor4f(1.0, 0, 0, 1.0)
-        pyglet.graphics.draw_indexed(len(vertarray) / 3,
-                                                 gl.GL_LINES,
-                                                 LineIndicies,
-                                                 ('v3f', vertarray))
-        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
+            
+        pyre.views.DrawTriangles(verts, Triangles)
 
     def _draw_fixed_image(self, ImageViewModel, color, BoundingBox=None):
         '''Draw a fixed image, bounding box indicates the visible area.  Everything is drawn if BoundingBox is None'''
@@ -490,7 +465,7 @@ class ImageTransformView(object):
 
                     LabelBatch.draw()
 
-                    LineIndicies = self.LineIndiciesFromTri(verts)
+                    LineIndicies = pyre.views.LineIndiciesFromTri(verts)
 
                     gl.glDisable(gl.GL_TEXTURE_2D)
                     pyglet.gl.glColor3f(tilecolor[0], tilecolor[1], tilecolor[2])
@@ -527,22 +502,6 @@ class ImageTransformView(object):
 
         return LabelBatch
 
-    def LineIndiciesFromTri(self, T):
-        LineIndicies = []
-
-        Triangles = numpy.array(T)
-        if Triangles.ndim == 1:
-            Triangles = Triangles.reshape(len(Triangles) / 3, 3)
-
-        for tri in Triangles:
-            LineIndicies.append(tri[0])
-            LineIndicies.append(tri[1])
-            LineIndicies.append(tri[1])
-            LineIndicies.append(tri[2])
-            LineIndicies.append(tri[2])
-            LineIndicies.append(tri[0])
-
-        return LineIndicies
 
     def draw_textures(self, ShowWarped=True, BoundingBox=None, glFunc=None):
         if self.ImageViewModel is None:
