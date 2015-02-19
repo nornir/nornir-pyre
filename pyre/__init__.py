@@ -89,6 +89,33 @@ def ProcessArgs():
                         help='Path to the image to be warped',
                         dest='WarpedImageFullPath'
                         )
+    
+    parser.add_argument('-stos',
+                        action='store',
+                        required=False,
+                        type=str,
+                        default=None,
+                        help='Path to the stos file to load',
+                        dest='stosFullPath'
+                        )
+    
+    parser.add_argument('-mosaic',
+                        action='store',
+                        required=False,
+                        type=str,
+                        default=None,
+                        help='Path to the mosaic file to load',
+                        dest='mosaicFullPath'
+                        )
+    
+    parser.add_argument('-tiles',
+                        action='store',
+                        required=False,
+                        type=str,
+                        default=None,
+                        help='Path to the tiles referred to in the mosaic file',
+                        dest='mosaicTilesFullPath'
+                        )
 
     return parser
 

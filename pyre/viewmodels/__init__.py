@@ -1,4 +1,4 @@
-__all__ = ['imageviewmodel', 'transformviewmodel']
+__all__ = ['imageviewmodel', 'transformcontroller']
 
-import imageviewmodel
-import transformviewmodel
+from pyre.viewmodels import imageviewmodel
+from pyre.viewmodels import transformcontroller

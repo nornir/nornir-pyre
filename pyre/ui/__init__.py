@@ -5,3 +5,5 @@ import glpanel
 import imagetransformpanel
 import imagetransformpanelbase
 import mosaictransformpanel
+import rectangle_command
+import camerastatusbar

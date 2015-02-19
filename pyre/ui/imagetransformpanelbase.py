@@ -33,7 +33,7 @@ class ImageTransformPanelBase(glpanel.GLPanel):
         '''
         Constructor
         '''
-        self._camera = None
+        self._camera = pyre.ui.camera.Camera((0,0), 1)
         
         super(ImageTransformPanelBase, self).__init__(parent, id, **kwargs)
         pass
@@ -45,27 +45,24 @@ class ImageTransformPanelBase(glpanel.GLPanel):
     
     def update(self, dt):
         pass
-
+    
+    
+    def ImageCoordsForMouse(self,y,x):
+        return self.camera.ImageCoordsForMouse(y,x)
     
     def on_resize(self, e):
         (self.width, self.height) = self.canvas.GetSizeTuple()
         if not self.camera is None:
             #try:
-            self.camera.focus(self.width, self.height)
+            self.camera.focus(self.height, self.width)
             #except:
             #pass
 
-    def VisibleImageBoundingBox(self):
-
-        (left, bottom) = self.ImageCoordsForMouse(0, 0)
-        (right, top) = self.ImageCoordsForMouse(self.width, self.height)
-
-        return spatial.Rectangle.CreateFromBounds((bottom, left, top, right))
     
     def GetCorrectedMousePosition(self, e):
         '''wxPython inverts the mouse position, flip it back'''
-        (x, y) = e.GetPositionTuple()
-        return (x, self.height - y)
+        (x,y) = e.GetPositionTuple()
+        return ( self.height - y, x)
     
     def OnTransformChanged(self):
         self.canvas.Refresh()
@@ -75,10 +72,14 @@ class ImageTransformPanelBase(glpanel.GLPanel):
         
     def lookatfixedpoint(self, point, scale):
         '''specify a point to look at in fixed space'''
-
-        self.camera.x = point[0]
-        self.camera.y = point[1]
+        self.camera.lookat(point)
         self.camera.scale = scale
+    
+    def center_camera(self):
+        '''Center the camera at whatever interesting thing this class displays
+        '''
+        
+        raise NotImplemented("Abstract function center_camera not implemented")
         
     
     def draw_objects(self):

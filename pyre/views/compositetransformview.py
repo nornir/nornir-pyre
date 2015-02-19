@@ -12,7 +12,7 @@ import scipy.spatial
 import pyglet.gl as gl
 from nornir_imageregistration.transforms import *
  
-import imagetransformview
+from pyre.views import imagegridtransformview
 
 import pyre.views
 
@@ -22,7 +22,7 @@ import os
 import resources
 
 
-class CompositeTransformView(  imagetransformview.ImageTransformView):
+class CompositeTransformView(  imagegridtransformview.ImageGridTransformView):
     '''
     Combines and image and a transform to render an image
     '''
@@ -55,11 +55,11 @@ class CompositeTransformView(  imagetransformview.ImageTransformView):
         '''
         Constructor
         '''
-        super(CompositeTransformView, self).__init__(ImageViewModel=FixedImageArray, TransformViewModel=Transform, ForwardTransform=True)
+        super(CompositeTransformView, self).__init__(ImageViewModel=FixedImageArray, Transform=Transform, ForwardTransform=True)
          
         self.FixedImageArray = FixedImageArray
         self.WarpedImageArray = WarpedImageArray
-        self.TransformViewModel = Transform
+        self.TransformController = Transform
         self.ForwardTransform = False
 
         # imageFullPath = os.path.join(resources.ResourcePath(), "Point.png")
@@ -68,18 +68,33 @@ class CompositeTransformView(  imagetransformview.ImageTransformView):
 
         # Valid Values are 'Add' and 'Subtract'
         self.ImageMode = 'Add'
+        
+        self._tranformed_verts_cache = None
 
+
+    def OnTransformChanged(self):
+        
+        super(CompositeTransformView, self).OnTransformChanged()
+        
+        self._tranformed_verts_cache = None 
+        
+    
+    def PopulateTransformedVertsCache(self):
+        verts = self.TransformController.WarpedPoints
+        self._tranformed_verts_cache = self.TransformController.Transform(verts)
+        return
 
     def draw_points(self, ForwardTransform=True, SelectedIndex=None, FixedSpace=True, BoundingBox=None, ScaleFactor=1):
         # if(ForwardTransform):
         
-        if self.TransformViewModel is None:
+        if self.TransformController is None:
             return 
 
-        verts = self.TransformViewModel.WarpedPoints
-        verts = self.TransformViewModel.Transform(verts)
-
-        self._draw_points(verts, SelectedIndex, BoundingBox=BoundingBox, ScaleFactor=ScaleFactor)
+        if self._tranformed_verts_cache is None:
+            self.PopulateTransformedVertsCache()
+        
+        if not self._tranformed_verts_cache is None:
+            self._draw_points(self._tranformed_verts_cache, SelectedIndex, BoundingBox=BoundingBox, ScaleFactor=ScaleFactor)
 
 
     def RemoveTrianglesOutsideConvexHull(self, T, convex_hull):
@@ -101,7 +116,7 @@ class CompositeTransformView(  imagetransformview.ImageTransformView):
         return Triangles
 
     def draw_lines(self, ForwardTransform=True):
-        if(self.TransformViewModel is None):
+        if(self.TransformController is None):
             return
 
         pyglet.gl.glColor4f(1.0, 0, 0, 1.0)
@@ -117,7 +132,7 @@ class CompositeTransformView(  imagetransformview.ImageTransformView):
                                 [y + h, x],
                                 [y + h, x + w]]
 
-                FixedCorners = self.TransformViewModel.Transform(WarpedCorners)
+                FixedCorners = self.TransformController.Transform(WarpedCorners)
 
                 tri = scipy.spatial.Delaunay(FixedCorners)
                 LineIndicies = pyre.views.LineIndiciesFromTri(tri.vertices)
@@ -135,23 +150,37 @@ class CompositeTransformView(  imagetransformview.ImageTransformView):
         pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
 
 
-    def draw_textures(self, BoundingBox=None, glFunc=None):
+    def setup_composite_rendering(self):
         
-        
+        #gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+        #gl.glBlendColor(1.0,1.0,1.0,1.0)
+        gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE)
+        return 
+                
+    def clear_composite_rendering(self):
+        #gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_DST_COLOR)
+        return 
 
+    def draw_textures(self, BoundingBox=None, glFunc=None):
+        self.setup_composite_rendering()
+        
+        glFunc = gl.GL_FUNC_ADD
+         
         if not self.FixedImageArray is None:
             FixedColor = None
             if(glFunc == gl.GL_FUNC_ADD):
-                FixedColor = (1.0, 0.0, 1.0, 1.0)
-    
-            self._draw_fixed_image(self.FixedImageArray, FixedColor, BoundingBox=BoundingBox)
+                FixedColor = (1.0, 0.0, 1.0, 1)
+                  
+            self.DrawFixedImage(self.FixedImageArray, FixedColor, BoundingBox=BoundingBox, z=0.25)
 
         if not self.WarpedImageArray is None:
             WarpedColor = None
             if(glFunc == gl.GL_FUNC_ADD):
                 gl.glBlendEquation(glFunc)
-                WarpedColor = (0, 1.0, 0, 1.0)
+                WarpedColor = (0, 1.0, 0, 1)
     
-            self._draw_warped_image(self.WarpedImageArray, color=WarpedColor, BoundingBox=BoundingBox, glFunc=glFunc)
-        # self._draw_fixed_image(self.__WarpedImageArray)
+            self.DrawWarpedImage(self.WarpedImageArray, color=WarpedColor, BoundingBox=BoundingBox, z=0.75, glFunc=glFunc)
+            
+        self.clear_composite_rendering()
+        # self.DrawFixedImage(self.__WarpedImageArray)
         # self._draw_warped_image(self.__FixedImageArray)

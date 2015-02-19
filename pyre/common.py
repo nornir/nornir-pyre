@@ -22,12 +22,12 @@ from launcher import Windows
 
 
 def SaveRegisteredWarpedImage(fileFullPath, transform, warpedImage):
-    from pyre.state import currentConfig
+    from pyre.state import currentStosConfig
 
     # registeredImage = assemble.WarpedImageToFixedSpace(transform, Config.FixedImageArray.Image.shape, Config.WarpedImageArray.Image)
     registeredImage = AssembleHugeRegisteredWarpedImage(transform,
-                                                        currentConfig.FixedImageViewModel.Image.shape,
-                                                        currentConfig.WarpedImageViewModel.Image)
+                                                        currentStosConfig.FixedImageViewModel.Image.shape,
+                                                        currentStosConfig.WarpedImageViewModel.Image)
 
     imsave(fileFullPath, registeredImage)
 
@@ -61,7 +61,7 @@ def SyncWindows(LookAt, scale):
 
     warpedLookAt = LookAt
     if(Windows['Warped'].IsShown()):
-        warpedLookAt = currentConfig._TransformViewModel.InverseTransform([LookAt])
+        warpedLookAt = currentStosConfig._TransformViewModel.InverseTransform([LookAt])
         warpedLookAt = warpedLookAt[0]
 
 
@@ -75,32 +75,32 @@ def SyncWindows(LookAt, scale):
 
 
 def RotateTranslateWarpedImage(LimitImageSize=False):
-    from pyre.state import currentConfig
+    from pyre.state import currentStosConfig
 
     largestdimension = 2047
     if LimitImageSize:
         largestdimension = 818
 
-    if not (currentConfig.FixedImageViewModel is None or currentConfig.WarpedImageViewModel is None):
-        alignRecord = stos.SliceToSliceBruteForce(currentConfig.FixedImageViewModel.Image,
-                                                                 currentConfig.WarpedImageViewModel.Image,
+    if not (currentStosConfig.FixedImageViewModel is None or currentStosConfig.WarpedImageViewModel is None):
+        alignRecord = stos.SliceToSliceBruteForce(currentStosConfig.FixedImageViewModel.Image,
+                                                                 currentStosConfig.WarpedImageViewModel.Image,
                                                                   LargestDimension=largestdimension,
                                                                   Cluster=False)
         # alignRecord = IrTools.alignment_record.AlignmentRecord((22.67, -4), 100, -132.5)
         print "Alignment found: " + str(alignRecord)
-        transform = alignRecord.ToTransform(currentConfig.FixedImageViewModel.RawImageSize,
-                                             currentConfig.WarpedImageViewModel.RawImageSize)
-        currentConfig.TransformViewModel.SetPoints(transform.points)
+        transform = alignRecord.ToTransform(currentStosConfig.FixedImageViewModel.RawImageSize,
+                                             currentStosConfig.WarpedImageViewModel.RawImageSize)
+        currentStosConfig.TransformController.SetPoints(transform.points)
 
-        history.SaveState(currentConfig.TransformViewModel.SetPoints, currentConfig.TransformViewModel.TransformModel.points)
+        history.SaveState(currentStosConfig.TransformController.SetPoints, currentStosConfig.TransformController.Transform.points)
 
 
 def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea=None):
     '''Try to use the Composite view to render the two tiles we need for alignment'''
-    from pyre.state import currentConfig
+    from pyre.state import currentStosConfig
 
     if alignmentArea is None:
-        alignmentArea = currentConfig.AlignmentTileSize
+        alignmentArea = currentStosConfig.AlignmentTileSize
 
     FixedBotLeft = [controlpoint[0] - (alignmentArea[0] / 2.0),
                     controlpoint[1] - (alignmentArea[1] / 2.0)]
@@ -109,7 +109,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
                             fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea, extrapolate=True)
 
-    fixedImageROI = assemble.ExtractRegion(currentConfig.FixedImageViewModel.Image, FixedBotLeft, alignmentArea)
+    fixedImageROI = assemble.ExtractRegion(currentStosConfig.FixedImageViewModel.Image, FixedBotLeft, alignmentArea)
 
     # core.ShowGrayscale([fixedImageROI, warpedImageROI])
 
@@ -119,7 +119,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     # apoint = task.wait_return()
     # apoint = core.FindOffset(fixedImageROI, warpedImageROI, MinOverlap=0.2)
 
-    anglesToSearch = currentConfig.AnglesToSearch
+    anglesToSearch = currentStosConfig.AnglesToSearch
     apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25, Cluster=False)
 
     print("Auto-translate result: " + str(apoint))
@@ -130,7 +130,7 @@ def Run():
 
 
 if __name__ == "__main__":
-    from pyre.state import currentConfig
+    from pyre.state import currentStosConfig
 
     nornir_shared.misc.SetupLogging(os.curdir, Level=logging.WARNING)
 
@@ -140,16 +140,16 @@ if __name__ == "__main__":
 
         (root, ext) = os.path.splitext(singleArg)
         if ext.lower() == ".stos":
-            currentConfig.LoadStos(singleArg)
+            currentStosConfig.LoadStos(singleArg)
     else:
         parser = pyre.ProcessArgs()
         args = parser.parse_args()
 
         if not args.WarpedImageFullPath is None:
-            currentConfig.LoadWarpedImage(args.WarpedImageFullPath)
+            currentStosConfig.LoadWarpedImage(args.WarpedImageFullPath)
 
         if not args.FixedImageFullPath is None:
-            currentConfig.LoadFixedImage(args.FixedImageFullPath)
+            currentStosConfig.LoadFixedImage(args.FixedImageFullPath)
 
     pyre.Run()
 

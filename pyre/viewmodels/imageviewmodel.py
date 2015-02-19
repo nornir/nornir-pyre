@@ -18,17 +18,18 @@ import common
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
+import nornir_imageregistration
 
 Logger = logging.getLogger("ImageArray")
 
 
 class ImageViewModel(object):
     '''
-    Represents a numpy image as an array of textures
+    Represents a numpy image as an array of textures.  Read-only.
     '''
     
     #The largest dimension we allow a texture to have
-    MaxTextureDimension = int(2048)
+    MaxTextureDimension = int(4096)
 
     @property
     def Image(self):
@@ -36,43 +37,64 @@ class ImageViewModel(object):
 
     @property
     def width(self):
-        return self._width
+        '''Size of the full image'''
+        return self._Image.shape[1]
 
     @property
     def height(self):
-        return self._height
+        '''Size of the full image'''
+        return self._Image.shape[0]
 
     @property
     def NumRows(self):
+        '''Number of texture rows for the whole image'''
         return self._NumRows
 
     @property
     def NumCols(self):
+        '''Number of texture columns for the whole image'''
         return self._NumCols
 
     @property
     def size(self):
+        '''Size of the full image'''
         return (self._height, self._width)
 
     @property
     def shape(self):
+        '''Size of the full image'''
         return (self._height, self._width)   
 
     @property
     def ImageArray(self):
+        '''Array of textures for the full image'''
         if self._ImageArray is None:
             self._ImageArray = self.CreateImageArray()
         return self._ImageArray
     
     @property
     def TextureSize(self):
-        return (ImageViewModel.MaxTextureDimension, ImageViewModel.MaxTextureDimension)
+        '''Size of a texture'''
+        return self._TextureSize #(ImageViewModel.MaxTextureDimension, ImageViewModel.MaxTextureDimension)
 
 
     @property
     def ImageFilename(self):
+        '''Filename we loaded'''
         return self._ImageFilename
-
+    
+    @classmethod
+    def FindTextureSize(cls, shape):
+        _TextureSize = [int(core.NearestPowerOfTwo(shape[0])), int(core.NearestPowerOfTwo(shape[1]))]
+        
+        if _TextureSize[0] > cls.MaxTextureDimension:
+            _TextureSize[0] = cls.MaxTextureDimension
+            
+        if _TextureSize[1] > cls.MaxTextureDimension:
+            _TextureSize[1] = cls.MaxTextureDimension
+            
+        return _TextureSize
+        
 
     def __init__(self, ImageInput):
         '''
@@ -108,10 +130,12 @@ class ImageViewModel(object):
         # self._Image = core.npArrayToReadOnlySharedArray(self._Image)
 
         self.RawImageSize = self._Image.shape
-        self._NumCols = int(math.ceil(self._Image.shape[1] / float(ImageViewModel.MaxTextureDimension)))
-        self._NumRows = int(math.ceil(self._Image.shape[0] / float(ImageViewModel.MaxTextureDimension)))
+        
+        self._TextureSize = ImageViewModel.FindTextureSize(self.RawImageSize)
+        self._NumCols = int(math.ceil(self._Image.shape[1] / float(self.TextureSize[1])))
+        self._NumRows = int(math.ceil(self._Image.shape[0] / float(self.TextureSize[0])))
 
-        self._height, self._width = self.NumRows * ImageViewModel.MaxTextureDimension, self.NumCols * ImageViewModel.MaxTextureDimension
+        self._height, self._width = self.NumRows * self.TextureSize[nornir_imageregistration.iPoint.Y], self.NumCols * self.TextureSize[nornir_imageregistration.iPoint.X]
 
         self._ImageArray = None
 
@@ -154,25 +178,31 @@ class ImageViewModel(object):
  
         TextureGrid = list()
 
-        print('\nConverting image to ' + str(self.NumCols) + "x" + str(self.NumRows) + ' grid of OpenGL textures')
-        for iX in range(0, self.width, ImageViewModel.MaxTextureDimension):
+        print_output = self.NumCols > 1 and self.NumRows > 1
+        
+        if print_output:
+            print('\nConverting image to ' + str(self.NumCols) + "x" + str(self.NumRows) + ' grid of OpenGL textures')
+            
+        for iX in range(0, self.width, self.TextureSize[nornir_imageregistration.iPoint.X]):
             columnTextures = list()
-            lastCol = iX + ImageViewModel.MaxTextureDimension > self.width
+            lastCol = iX + self.TextureSize[nornir_imageregistration.iPoint.X] > self.width
 
-            end_iX = iX + ImageViewModel.MaxTextureDimension
+            end_iX = iX + self.TextureSize[nornir_imageregistration.iPoint.X]
             pad_image = end_iX > self.Image.shape[1]
             if pad_image:
                 end_iX = self.Image.shape[1]
 
-
-            sys.stdout.write('\n')
+            if print_output:
+                sys.stdout.write('\n')
+                
             # print "ix " + str(iX)
-            for iY in range(0, self.height, ImageViewModel.MaxTextureDimension):
+            for iY in range(0, self.height, self.TextureSize[nornir_imageregistration.iPoint.Y]):
 
-                sys.stdout.write('.')
-                lastRow = iY + ImageViewModel.MaxTextureDimension > self.height
+                if print_output:
+                    sys.stdout.write('.')
+                lastRow = iY + self.TextureSize[nornir_imageregistration.iPoint.Y] > self.height
 
-                end_iY = iY + ImageViewModel.MaxTextureDimension
+                end_iY = iY + self.TextureSize[nornir_imageregistration.iPoint.Y]
                 if end_iY > self.Image.shape[0]:
                     end_iY = self.Image.shape[0]
                     pad_image = True
@@ -183,18 +213,21 @@ class ImageViewModel(object):
 
                 temp = None
                 if pad_image:
-                    paddedImage = numpy.zeros([ImageViewModel.MaxTextureDimension, ImageViewModel.MaxTextureDimension])
+                    paddedImage = numpy.zeros(self.TextureSize)
                     paddedImage[0:end_iY - iY, 0:end_iX - iX] = self.Image[iY:end_iY, iX:end_iX]
                     temp = paddedImage
                 else:
                     temp = self.Image[iY:end_iY, iX:end_iX]
 
                 texture = resources.TextureForNumpyImage(temp)
+                del temp
                 columnTextures.append(texture)
 
             TextureGrid.append(columnTextures)
 
-        print('\nTexture creation complete\n')
+        if print_output:
+            print('\nTexture creation complete\n')
+            
         Logger.info("Completed CreateImageArray")
         return TextureGrid
 

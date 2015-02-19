@@ -35,7 +35,7 @@ def _DefaultTransform(FixedShape=None, WarpedShape=None):
                                         WarpedShape)
 
 
-class  TransformViewModel(object):
+class  TransformController(object):
     '''
     Combines an image and a transform to render an image
     '''
@@ -43,15 +43,15 @@ class  TransformViewModel(object):
     @classmethod
     def CreateDefault(cls, FixedShape=None, WarpedShape=None):
         T = _DefaultTransform(FixedShape, WarpedShape)
-        return TransformViewModel(T)
+        return TransformController(T)
 
     @property
     def width(self):
-        return self.TransformModel.width;
+        return self.TransformModel.FixedBoundingBox.Width
  
     @property
     def height(self):
-        return self.TransformModel.height;
+        return self.TransformModel.FixedBoundingBox.Height
 
     @property
     def NumPoints(self):
@@ -313,10 +313,10 @@ class  TransformViewModel(object):
 
     def AutoAlignPoints(self, i_points):
         '''Attemps to align the specified point indicies'''
-        from pyre.state import currentConfig
+        from pyre.state import currentStosConfig
 
-        if(currentConfig.FixedImageViewModel is None or
-           currentConfig.WarpedImageViewModel is None):
+        if(currentStosConfig.FixedImageViewModel is None or
+           currentStosConfig.WarpedImageViewModel is None):
             return
 
         if not isinstance(i_points, list):
@@ -336,8 +336,8 @@ class  TransformViewModel(object):
     
                 task = pool.add_task(i_point, common.AttemptAlignPoint,
                                                 self,
-                                                currentConfig.FixedImageViewModel.Image,
-                                                currentConfig.WarpedImageViewModel.Image,
+                                                currentStosConfig.FixedImageViewModel.Image,
+                                                currentStosConfig.WarpedImageViewModel.Image,
                                                 fixed,
                                                 warped)
                 indextotask[i_point] = task
@@ -363,8 +363,8 @@ class  TransformViewModel(object):
             fixed = self.GetFixedPoint(i_point)
             warped = self.GetWarpedPoint(i_point)
             record = common.AttemptAlignPoint(self,
-                                     currentConfig.FixedImageViewModel.Image,
-                                     currentConfig.WarpedImageViewModel.Image,
+                                     currentStosConfig.FixedImageViewModel.Image,
+                                     currentStosConfig.WarpedImageViewModel.Image,
                                      fixed,
                                      warped)
             
@@ -384,4 +384,4 @@ class  TransformViewModel(object):
         self.TranslateFixed(offsets)
 
 
-        # return self.TransformViewModel.MovePoint(i_point, dx, dy, FixedSpace = self.FixedSpace)
+        # return self.TransformController.MovePoint(i_point, dx, dy, FixedSpace = self.FixedSpace)

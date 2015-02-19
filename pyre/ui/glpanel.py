@@ -118,16 +118,19 @@ class GLPanel(wx.Panel):
         GLPanel.pygletcontext.set_current()
 
         # normal gl init
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-        gl.glEnable(gl.GL_TEXTURE_2D)
-        gl.glShadeModel(gl.GL_SMOOTH)
-        gl.glClearColor(0, 0, 0, 1)
+        self._InitGLState()
 
         # create objects to draw
         self.create_objects()
 
         self.GLinitialized = True
+        
+    def _InitGLState(self):
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE)
+        gl.glEnable(gl.GL_TEXTURE_2D)
+        gl.glShadeModel(gl.GL_SMOOTH)
+        gl.glClearColor(0, 0, 0, 1)
 
     def OnReshape(self, width, height):
         '''Reshape the OpenGL viewport based on the dimensions of the window.'''
