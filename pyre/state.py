@@ -25,14 +25,14 @@ currentStosConfig = None
 class StateEvents(object):
     
     def __init__(self):
-        self._OnTransformViewModelChangeEventListeners = []
+        self._OnTransformControllerChangeEventListeners = []
         self._OnImageChangeEventListeners = []
 
-    def AddOnTransformViewModelChangeEventListener(self, func):
-        self._OnTransformViewModelChangeEventListeners.append(func)
+    def AddOnTransformControllerChangeEventListener(self, func):
+        self._OnTransformControllerChangeEventListeners.append(func)
 
-    def FireOnTransformViewModelChanged(self):
-        for func in self._OnTransformViewModelChangeEventListeners:
+    def FireOnTransformControllerChanged(self):
+        for func in self._OnTransformControllerChangeEventListeners:
             func()
 
     def AddOnImageViewModelChangeEventListener(self, func):
@@ -169,7 +169,7 @@ class StosState(StateEvents):
     ExportTileSize = [1024, 1024]
 
     AlignmentTileSize = [128, 128]
-    AnglesToSearch = numpy.linspace(-7.5, 7.5, 21)
+    AnglesToSearch = numpy.linspace(-7.5, 7.5, 11)
 
     @property
     def FixedImageFullPath(self):
@@ -243,7 +243,7 @@ class StosState(StateEvents):
         if not val is None:
             assert(isinstance(val, TransformController))
 
-        self.FireOnTransformViewModelChanged()
+        self.FireOnTransformControllerChanged()
 
     def __init__(self):
 
@@ -252,14 +252,14 @@ class StosState(StateEvents):
         self._FixedImageViewModel = None
         self._CompositeImageViewModel = None
 
-        self._OnTransformViewModelChangeEventListeners = []
+        self._OnTransformControllerChangeEventListeners = []
         self._OnImageChangeEventListeners = []
 
-    def AddOnTransformViewModelChangeEventListener(self, func):
-        self._OnTransformViewModelChangeEventListeners.append(func)
+    def AddOnTransformControllerChangeEventListener(self, func):
+        self._OnTransformControllerChangeEventListeners.append(func)
 
-    def FireOnTransformViewModelChanged(self):
-        for func in self._OnTransformViewModelChangeEventListeners:
+    def FireOnTransformControllerChanged(self):
+        for func in self._OnTransformControllerChangeEventListeners:
             func()
 
     def AddOnImageViewModelChangeEventListener(self, func):

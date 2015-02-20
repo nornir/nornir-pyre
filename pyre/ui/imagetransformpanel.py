@@ -85,7 +85,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
  
         self.ImageGridTransformView = ImageGridTransformView
 
-        currentStosConfig.AddOnTransformViewModelChangeEventListener(self.OnTransformViewModelChanged)
+        currentStosConfig.AddOnTransformControllerChangeEventListener(self.OnTransformViewModelChanged)
         currentStosConfig.AddOnImageViewModelChangeEventListener(self.OnImageViewModelChanged)
 
         # self.schedule = clock.schedule_interval(func = self.update, interval = 1 / 2.)
@@ -422,7 +422,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
 
     def on_mouse_press(self, e):
         (y,x) = self.GetCorrectedMousePosition(e)
-        ImageX, ImageY = self.camera.ImageCoordsForMouse(y,x)
+        ImageY, ImageX = self.camera.ImageCoordsForMouse(y,x)
 
         if ImageX is None or ImageY is None:
             return

@@ -487,8 +487,8 @@ class StosWindow(PyreWindowBase):
         
 
     def OnClearAllPoints(self, e):
-        pyre.state.currentConfig.TransformController = TransformController.CreateDefault(pyre.state.currentStosConfig.FixedImageViewModel.RawImageSize,
-                                                                 pyre.state.currentStosConfig.WarpedImageViewModel.RawImageSize)
+        pyre.state.currentStosConfig.TransformController.SetPoints( TransformController.CreateDefault(pyre.state.currentStosConfig.FixedImageViewModel.RawImageSize,
+                                                                                                      pyre.state.currentStosConfig.WarpedImageViewModel.RawImageSize).points)
 
 
     def OnRotateTranslate(self, e):
@@ -543,12 +543,15 @@ class StosWindow(PyreWindowBase):
                 self.filename = dlg.GetFilename()
                 pyre.state.currentStosConfig.OutputImageFullPath = os.path.join(StosWindow.imagedirname, self.filename)
 
+#                 common.SaveRegisteredWarpedImage(pyre.state.currentStosConfig.OutputImageFullPath,
+#                                                  pyre.state.currentStosConfig.Transform,
+#                                                  pyre.state.currentStosConfig.WarpedImageViewModel.Image)
                 pool = pools.GetGlobalThreadPool()
                 pool.add_task("Save " + pyre.state.currentStosConfig.OutputImageFullPath,
-                               common.SaveRegisteredWarpedImage,
-                               pyre.state.currentStosConfig.OutputImageFullPath,
-                               pyre.state.currentStosConfig.TransformController.Transform,
-                               pyre.state.currentStosConfig.WarpedImageViewModel.Image)
+                                common.SaveRegisteredWarpedImage,
+                                pyre.state.currentStosConfig.OutputImageFullPath,
+                                pyre.state.currentStosConfig.Transform,
+                                pyre.state.currentStosConfig.WarpedImageViewModel.Image)
 
 
     def OnSaveStos(self, e):
@@ -562,7 +565,7 @@ class StosWindow(PyreWindowBase):
 
                 stosObj = StosFile.Create(pyre.state.currentStosConfig.FixedImageViewModel.ImageFilename,
                                           pyre.state.currentStosConfig.WarpedImageViewModel.ImageFilename,
-                                          pyre.state.currentStosConfig.TransformController.Transform)
+                                          pyre.state.currentStosConfig.Transform)
                 stosObj.Save(saveFileFullPath)
             dlg.Destroy()
 

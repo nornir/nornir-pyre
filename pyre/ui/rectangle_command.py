@@ -6,12 +6,16 @@ Created on Feb 10, 2015
 
 import nornir_imageregistration.spatial
 import numpy
+import wx 
 import pyre.views
+import command_base
 
-class RectangleCommand(object):
+
+
+class RectangleCommand(command_base.VolumeCommandBase):
     '''
     The user interface to draw and size a rectangle
-    '''
+    ''' 
     
     @property
     def Origin(self):
@@ -32,52 +36,80 @@ class RectangleCommand(object):
     @LastMousePosition.setter
     def LastMousePosition(self, value):
         self._lastMousePosition = numpy.array(value)
-    
+        
+    def unsubscribe_to_parent(self):
+        self._unbind_mouse_events()
+                
     @property
     def rect(self):
         stacked = numpy.vstack((self.Origin, self.LastMousePosition))
-        min_val = numpy.min(stacked,0)
-        max_val = numpy.max(stacked,0)
+        min_val = numpy.min(stacked, 0)
+        max_val = numpy.max(stacked, 0)
         
         return nornir_imageregistration.spatial.Rectangle.CreateFromBounds((min_val[nornir_imageregistration.spatial.iPoint.Y],
                                                                                   min_val[nornir_imageregistration.spatial.iPoint.X],
                                                                                   max_val[nornir_imageregistration.spatial.iPoint.Y],
                                                                                   max_val[nornir_imageregistration.spatial.iPoint.X]))
 
-    def __init__(self, origin, screen_to_volume_coord_func):
+    def __init__(self, parent, completed_func, camera, origin):
         '''
-        Constructor
+        Constructor 
+        :param window parent: Window to subscribe to for events
+        :param func completed_func: Function to call when command has completed
+        :param Camera camera: Camera to use for mapping screen to volume coordinates
         :param tuple origin: Origin of rectangle
-        :param func mouse_coord_func: Function to call to obtain mouse position in volume coordinates
-        :param func mouse_to_volume_coord_func: Function to call to obtain volume position from screen coordinates
         '''
+        
+        super(RectangleCommand, self).__init__(parent, completed_func, camera)
         
         self.Origin = origin 
         self.LastMousePosition = origin
         
-        print("Start Rect: %d x %d" % (self.Origin[nornir_imageregistration.spatial.iPoint.X], self.Origin[nornir_imageregistration.spatial.iPoint.Y]))
+        self._bind_mouse_events()
          
-        self.screen_to_volume_coord_func = screen_to_volume_coord_func
-
+        print("Start Rect: %d x %d" % (self.Origin[nornir_imageregistration.spatial.iPoint.X], self.Origin[nornir_imageregistration.spatial.iPoint.Y]))
+          
+    def _bind_mouse_events(self):
+        self.parent.Bind(wx.EVT_MOTION, self.on_mouse_drag)
+        self.parent.Bind(wx.EVT_LEFT_UP, self.on_mouse_release)
         
-    def on_mouse_drag(self, e, mouse_position):
+    def _unbind_mouse_events(self):
+        self.parent.Unbind(wx.EVT_MOTION, handler=self.on_mouse_drag)
+        self.parent.Unbind(wx.EVT_LEFT_UP, handler=self.on_mouse_release)
+        return
+           
+    def _update_last_mouse_position(self, e):
+        '''Update the last mouse position using volume coordinates.
+        :return: Volume coordinates in numpy array (Y,X)
+        '''
+        (y, x) = self.GetCorrectedMousePosition(e)
+        ImageY, ImageX = self.camera.ImageCoordsForMouse(y,x) 
+        self.LastMousePosition = numpy.array((ImageY, ImageX))
+        
+        return numpy.array((ImageY, ImageX))
+         
+        
+    def on_mouse_drag(self, e):
         '''
         :param obj e: wx mouse move object
         :param tuple mouse_position: Position of the mouse on the screen, corrected for inverted Y coordinates in GL        
         '''
-        
-        self.LastMousePosition = self.screen_to_volume_coord_func(mouse_position[nornir_imageregistration.spatial.iPoint.Y],
-                                                                  mouse_position[nornir_imageregistration.spatial.iPoint.X])
-        
-        
-        
+        self._update_last_mouse_position(e)
         print("X: %g x Y: %g" % (self.LastMousePosition[nornir_imageregistration.spatial.iPoint.X], self.LastMousePosition[nornir_imageregistration.spatial.iPoint.Y]))
-        pass
-        
-    def draw(self):
-        
-        pyre.views.DrawRectangle(self.rect, (0.5, 1.0, 1.0, 0.5))
-        
+        self.parent.Refresh()
         pass
     
+    def on_mouse_release(self, e):
+        '''
+        :param obj e: wx mouse move object
+        :param tuple mouse_position: Position of the mouse on the screen, corrected for inverted Y coordinates in GL        
+        '''
+        self._update_last_mouse_position(e)
+        print("X: %g x Y: %g" % (self.LastMousePosition[nornir_imageregistration.spatial.iPoint.X], self.LastMousePosition[nornir_imageregistration.spatial.iPoint.Y]))
+        self.parent.Refresh()
+        self.end_command()
+        return
         
+    def draw(self):
+        pyre.views.DrawRectangle(self.rect, (0.5, 1.0, 1.0, 0.5))
+        return

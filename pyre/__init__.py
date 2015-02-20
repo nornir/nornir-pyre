@@ -67,6 +67,8 @@ import commandhistory
 from launcher import Run, Windows
 from commandhistory import history
 
+__all__ = ['ui', 'viewmodels', 'views']
+
 def ProcessArgs():
 
     # conflict_handler = 'resolve' replaces old arguments with new if both use the same option flag

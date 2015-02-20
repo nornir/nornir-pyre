@@ -286,8 +286,9 @@ class  TransformController(object):
 
         NearestPoint = self.GetNearestPoint(index, FixedSpace)
 
-        NearestPoint[0] = NearestPoint[0] + ImageDY;
-        NearestPoint[1] = NearestPoint[1] + ImageDX;
+        NearestPoint += numpy.array((ImageDY, ImageDX))
+        #NearestPoint[0] = NearestPoint[0] + ImageDY;
+        #NearestPoint[1] = NearestPoint[1] + ImageDX;
 
         if(not FixedSpace):
             if not self.ShowWarped:
@@ -296,12 +297,9 @@ class  TransformController(object):
                 OldWarpedPoint = self.TransformModel.InverseTransform([[NearestPoint[0] - ImageDY, NearestPoint[1] - ImageDX]])[0];
                 NewWarpedPoint = self.TransformModel.InverseTransform([NearestPoint])[0];
 
-                ModifiedDX = NewWarpedPoint[1] - OldWarpedPoint[1];
-                ModifiedDY = NewWarpedPoint[0] - OldWarpedPoint[0];
+                TranslatedPoint = NewWarpedPoint - OldWarpedPoint 
 
-                FinalPoint = self.TransformModel.WarpedPoints[index];
-                FinalPoint[0] = FinalPoint[0] + ModifiedDY;
-                FinalPoint[1] = FinalPoint[1] + ModifiedDX;
+                FinalPoint = self.TransformModel.WarpedPoints[index] + TranslatedPoint 
                 index = self.TransformModel.UpdateWarpedPoint(index, FinalPoint);
         else:
             index = self.TransformModel.UpdateFixedPoint(index, NearestPoint);
@@ -326,23 +324,19 @@ class  TransformController(object):
 
         indextotask = {}
         if len(i_points) > 1:
-            pool = pools.GetGlobalThreadPool()
+            pool = pools.GetGlobalLocalMachinePool()
             
             for i_point in i_points:
                 fixed = self.GetFixedPoint(i_point)
                 warped = self.GetWarpedPoint(i_point)
                 
-                
-    
                 task = pool.add_task(i_point, common.AttemptAlignPoint,
                                                 self,
                                                 currentStosConfig.FixedImageViewModel.Image,
                                                 currentStosConfig.WarpedImageViewModel.Image,
                                                 fixed,
                                                 warped)
-                indextotask[i_point] = task
-    
-            
+                indextotask[i_point] = task       
     
             for i_point in indextotask:
                 task = indextotask[i_point]

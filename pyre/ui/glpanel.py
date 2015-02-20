@@ -131,6 +131,8 @@ class GLPanel(wx.Panel):
         gl.glEnable(gl.GL_TEXTURE_2D)
         gl.glShadeModel(gl.GL_SMOOTH)
         gl.glClearColor(0, 0, 0, 1)
+        #Rotated images can have a z-distance of more than one
+        gl.glDepthRangef(0,2)
 
     def OnReshape(self, width, height):
         '''Reshape the OpenGL viewport based on the dimensions of the window.'''

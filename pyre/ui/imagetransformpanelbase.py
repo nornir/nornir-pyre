@@ -57,7 +57,6 @@ class ImageTransformPanelBase(glpanel.GLPanel):
             self.camera.focus(self.height, self.width)
             #except:
             #pass
-
     
     def GetCorrectedMousePosition(self, e):
         '''wxPython inverts the mouse position, flip it back'''

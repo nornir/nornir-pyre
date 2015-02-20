@@ -104,8 +104,8 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
             
         pyre.views.ClearDrawTextureState()
             
-        #for itv in pyre.state.currentMosaicConfig.ImageTransformViewList:
-        #    itv.draw_points(SelectedIndex=None, BoundingBox=self.camera.VisibleImageBoundingBox, FixedSpace=True, ScaleFactor=pointScale)
+        for itv in pyre.state.currentMosaicConfig.ImageTransformViewList:
+            itv.draw_points(SelectedIndex=None, BoundingBox=self.camera.VisibleImageBoundingBox, FixedSpace=True, ScaleFactor=pointScale)
             
         if not self.Command is None:
             self.Command.draw()
@@ -119,7 +119,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
             return
         
         if e.LeftIsDown():
-            self.Command = pyre.ui.rectangle_command.RectangleCommand((ImageY, ImageX), screen_to_volume_coord_func=self.camera.ImageCoordsForMouse)
+            self.Command = pyre.ui.rectangle_command.RectangleCommand(self.canvas, self.on_rectange_command_completed, self.camera, (ImageY, ImageX), )
             
         if e.MiddleIsDown():
             self.center_camera()
@@ -130,7 +130,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         (y, x) = self.GetCorrectedMousePosition(e)
         
         if e.LeftIsDown() and not self.Command is None:
-            self.Command.on_mouse_drag(e, (y,x)) 
+            self.Command.on_mouse_drag(e) 
         
         if self.LastMousePosition is None:
             self.LastMousePosition = (y, x)
@@ -181,3 +181,6 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         
         self.canvas.Refresh()
         
+    def on_rectange_command_completed(self, RectangleCommand):
+        self.Command = None
+        return
