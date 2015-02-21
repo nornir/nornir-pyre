@@ -24,7 +24,6 @@ import pyre.views
 
 import imagetransformpanelbase
 import nornir_imageregistration
-from pyre.ui.camerastatusbar import CameraStatusBar
 
 class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
     '''
@@ -115,10 +114,9 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         self._bind_mouse_events()
         
         self.canvas.Bind(wx.EVT_KEY_DOWN, self.on_key_press)
-
         self.canvas.Bind(wx.EVT_SIZE, self.on_resize)
 
-        self.AddStatusBar()
+        
 
         self.DebugTickCounter = 0
         self.timer.Start(500)
@@ -132,11 +130,6 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         self.canvas.Bind(wx.EVT_MOTION, self.on_mouse_drag)
         self.canvas.Bind(wx.EVT_LEFT_UP, self.on_mouse_release)
 
-
-    def AddStatusBar(self):
-        self.statusBar = CameraStatusBar(self, self.camera)
-        self.sizer.Add(self.statusBar, flag=wx.BOTTOM | wx.EXPAND)
-        self.statusBar.SetFieldsCount(3)
 
     def on_timer(self, e):
 #        DebugStr = '%d' % self.DebugTickCounter
@@ -181,9 +174,9 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
                                                                  currentStosConfig.WarpedImageViewModel,
                                                                  currentStosConfig.TransformController.TransformModel)
         elif not self.FixedSpace:
-            self.ImageGridTransformView = ImageGridTransformView(currentStosConfig.WarpedImageViewModel, currentStosConfig.TransformController.TransformModel, ForwardTransform=True)
+            self.ImageGridTransformView = ImageGridTransformView(currentStosConfig.WarpedImageViewModel, currentStosConfig.TransformController.TransformModel)
         else:
-            self.ImageGridTransformView = ImageGridTransformView(currentStosConfig.FixedImageViewModel, currentStosConfig.TransformController.TransformModel, ForwardTransform=False)
+            self.ImageGridTransformView = ImageGridTransformView(currentStosConfig.FixedImageViewModel, currentStosConfig.TransformController.TransformModel)
 
 
     def NextGLFunction(self):
@@ -205,7 +198,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
 
         if keycode == wx.WXK_TAB:
             try:
-                if(self.FixedSpace):
+                if(self.composite):
                     self.NextGLFunction()
                 else:
                     self.ShowWarped = not self.ShowWarped
@@ -336,15 +329,20 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
 
         if self.TransformController is None:
             return
-
-        if self.ShowLines:
-            self._ImageTransformView.draw_lines()
-
+ 
         FixedSpacePoints = self.FixedSpace
+        FixedSpaceLines = FixedSpacePoints
         if self.composite:
             FixedSpacePoints = False
-        elif not self.FixedSpace and self.ShowWarped:
-            FixedSpacePoints = True
+            FixedSpaceLines = True
+        else:
+            #This looks backwards, and it is.  The transform object itself refers to warped and fixed space.  Depending on how warped is interpreted it means 
+            #the points that are warped or the points that have been warped.  It needs to be refactored to make the names unabiguous
+            FixedSpacePoints = self.ShowWarped
+            FixedSpaceLines = self.ShowWarped
+            
+        if self.ShowLines:
+            self._ImageTransformView.draw_lines(draw_in_fixed_space=FixedSpaceLines)
 
         # pointScale = (BoundingBox[3] * BoundingBox[2]) / (self.height * self.width)
         pointScale = self.camera.scale / self.height

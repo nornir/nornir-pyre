@@ -170,7 +170,9 @@ class StosState(StateEvents):
 
     AlignmentTileSize = [128, 128]
     AnglesToSearch = numpy.linspace(-7.5, 7.5, 11)
-
+    
+    
+    
     @property
     def FixedImageFullPath(self):
         return self.fixedImageViewModel.ImageFilename

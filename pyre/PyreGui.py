@@ -22,6 +22,9 @@ import pyre.state
 
 class PyreWindowBase(wx.Frame):
     '''The window which we use for mosaic views'''
+    
+    
+        
     @property
     def ID(self):
         return self._ID
@@ -568,8 +571,6 @@ class StosWindow(PyreWindowBase):
                                           pyre.state.currentStosConfig.Transform)
                 stosObj.Save(saveFileFullPath)
             dlg.Destroy()
-
-
 
 
 class TextDrop (wx.TextDropTarget):

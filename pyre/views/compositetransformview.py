@@ -55,12 +55,11 @@ class CompositeTransformView(  imagegridtransformview.ImageGridTransformView):
         '''
         Constructor
         '''
-        super(CompositeTransformView, self).__init__(ImageViewModel=FixedImageArray, Transform=Transform, ForwardTransform=True)
+        super(CompositeTransformView, self).__init__(ImageViewModel=FixedImageArray, Transform=Transform)
          
         self.FixedImageArray = FixedImageArray
         self.WarpedImageArray = WarpedImageArray
-        self.TransformController = Transform
-        self.ForwardTransform = False
+        self.TransformController = Transform 
 
         # imageFullPath = os.path.join(resources.ResourcePath(), "Point.png")
         # self.PointImage = pyglet.image.load(imageFullPath)
@@ -80,8 +79,9 @@ class CompositeTransformView(  imagegridtransformview.ImageGridTransformView):
         
     
     def PopulateTransformedVertsCache(self):
-        verts = self.TransformController.WarpedPoints
-        self._tranformed_verts_cache = self.TransformController.Transform(verts)
+        #verts = self.Transform.WarpedPoints
+        #self._tranformed_verts_cache = self.Transform.Transform(verts)
+        self._tranformed_verts_cache = self.Transform.FixedPoints
         return
 
     def draw_points(self, ForwardTransform=True, SelectedIndex=None, FixedSpace=True, BoundingBox=None, ScaleFactor=1):
@@ -114,40 +114,40 @@ class CompositeTransformView(  imagegridtransformview.ImageGridTransformView):
             iTri = iTri - 1
 
         return Triangles
-
-    def draw_lines(self, ForwardTransform=True):
-        if(self.TransformController is None):
-            return
-
-        pyglet.gl.glColor4f(1.0, 0, 0, 1.0)
-        ImageArray = self.WarpedImageArray
-        for ix in range(0, ImageArray.NumCols):
-            for iy in range(0, ImageArray.NumRows):
-                x = ImageArray.TextureSize[1] * ix
-                y = ImageArray.TextureSize[0] * iy
-                h, w = ImageArray.TextureSize
-
-                WarpedCorners = [[y, x],
-                                [y, x + w],
-                                [y + h, x],
-                                [y + h, x + w]]
-
-                FixedCorners = self.TransformController.Transform(WarpedCorners)
-
-                tri = scipy.spatial.Delaunay(FixedCorners)
-                LineIndicies = pyre.views.LineIndiciesFromTri(tri.vertices)
-
-                FlatPoints = numpy.fliplr(FixedCorners).ravel().tolist()
-
-                vertarray = (gl.GLfloat * len(FlatPoints))(*FlatPoints)
-
-                gl.glDisable(gl.GL_TEXTURE_2D)
-
-                pyglet.graphics.draw_indexed(len(vertarray) / 2,
-                                                         gl.GL_LINES,
-                                                         LineIndicies,
-                                                         ('v2f', vertarray))
-        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
+# 
+#     def draw_lines(self, ForwardTransform=True):
+#         if(self.TransformController is None):
+#             return
+# 
+#         pyglet.gl.glColor4f(1.0, 0, 0, 1.0)
+#         ImageArray = self.WarpedImageArray
+#         for ix in range(0, ImageArray.NumCols):
+#             for iy in range(0, ImageArray.NumRows):
+#                 x = ImageArray.TextureSize[1] * ix
+#                 y = ImageArray.TextureSize[0] * iy
+#                 h, w = ImageArray.TextureSize
+# 
+#                 WarpedCorners = [[y, x],
+#                                 [y, x + w],
+#                                 [y + h, x],
+#                                 [y + h, x + w]]
+# 
+#                 FixedCorners = self.TransformController.Transform(WarpedCorners)
+# 
+#                 tri = scipy.spatial.Delaunay(FixedCorners)
+#                 LineIndicies = pyre.views.LineIndiciesFromTri(tri.vertices)
+# 
+#                 FlatPoints = numpy.fliplr(FixedCorners).ravel().tolist()
+# 
+#                 vertarray = (gl.GLfloat * len(FlatPoints))(*FlatPoints)
+# 
+#                 gl.glDisable(gl.GL_TEXTURE_2D)
+# 
+#                 pyglet.graphics.draw_indexed(len(vertarray) / 2,
+#                                                          gl.GL_LINES,
+#                                                          LineIndicies,
+#                                                          ('v2f', vertarray))
+#         pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
 
 
     def setup_composite_rendering(self):
@@ -179,7 +179,7 @@ class CompositeTransformView(  imagegridtransformview.ImageGridTransformView):
                 gl.glBlendEquation(glFunc)
                 WarpedColor = (0, 1.0, 0, 1)
     
-            self.DrawWarpedImage(self.WarpedImageArray, color=WarpedColor, BoundingBox=BoundingBox, z=0.75, glFunc=glFunc)
+            self.DrawWarpedImage(self.WarpedImageArray, tex_color=WarpedColor, BoundingBox=BoundingBox, z=0.75, glFunc=glFunc)
             
         self.clear_composite_rendering()
         # self.DrawFixedImage(self.__WarpedImageArray)

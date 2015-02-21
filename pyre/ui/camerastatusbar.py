@@ -21,6 +21,9 @@ class CameraStatusBar(wx.StatusBar):
     def update_status_bar(self, point):
         if self.camera is None:
             return
+        
+        if point is None:
+            return 
         # mousePosTemplate = '%d x, %d y, %4.2f%%
   
         ZoomValue = (1.0 / (float(self.camera.scale) / float(self.camera.WindowHeight))) * 100.0

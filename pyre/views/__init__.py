@@ -33,7 +33,7 @@ def LineIndiciesFromTri(T):
 def DrawTriangles(verts, Triangles):
     LineIndicies = LineIndiciesFromTri(Triangles)
 
-    zCoords = numpy.zeros((len(verts), 1), dtype=verts.dtype)
+    zCoords = numpy.ones((len(verts), 1), dtype=verts.dtype)
     Points = numpy.hstack((verts, zCoords))
 
     FlatPoints = Points.ravel().tolist()

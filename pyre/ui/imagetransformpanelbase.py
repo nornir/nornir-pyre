@@ -4,9 +4,11 @@ Created on Feb 6, 2015
 @author: u0490822
 '''
 
+import wx
 from pyre.ui import glpanel
 import nornir_imageregistration.spatial as spatial
 import pyre.ui.camera
+from pyre.ui.camerastatusbar import CameraStatusBar
 
 class ImageTransformPanelBase(glpanel.GLPanel):
     '''
@@ -36,8 +38,17 @@ class ImageTransformPanelBase(glpanel.GLPanel):
         self._camera = pyre.ui.camera.Camera((0,0), 1)
         
         super(ImageTransformPanelBase, self).__init__(parent, id, **kwargs)
+        
+        self.AddStatusBar()
+        
         pass
     
+    
+    def AddStatusBar(self):
+        self.statusBar = CameraStatusBar(self, self.camera)
+        self.sizer.Add(self.statusBar, flag=wx.BOTTOM | wx.EXPAND)
+        self.statusBar.SetFieldsCount(3)
+ 
     
     def __str__(self, *args, **kwargs):
         return self.TopLevelParent.Label
