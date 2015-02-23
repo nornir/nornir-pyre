@@ -29,7 +29,7 @@ class ImageViewModel(object):
     '''
     
     #The largest dimension we allow a texture to have
-    MaxTextureDimension = int(2048)
+    MaxTextureDimension = int(4096)
 
     @property
     def Image(self):

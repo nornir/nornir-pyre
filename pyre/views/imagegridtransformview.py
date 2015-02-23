@@ -209,15 +209,18 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
     
     @classmethod
     def _update_sprite_position(cls, sprite, point, scale):
-        sprite.x = point[nornir_imageregistration.iPoint.X]
-        sprite.y = point[nornir_imageregistration.iPoint.Y]
-        sprite.scale = scale
+        if sprite.x != point[nornir_imageregistration.iPoint.X] or sprite.y != point[nornir_imageregistration.iPoint.Y]:
+            sprite.set_position(point[nornir_imageregistration.iPoint.X], point[nornir_imageregistration.iPoint.Y]) 
+        
+        if sprite.scale != scale:
+            sprite.scale = scale
         
     
     def _update_sprite_flash(self, sprite, is_selected, time_for_selected_to_flash=False):
         
         if not is_selected:
-            if sprite.image != self.PointImage:
+            if sprite.image.id != self.PointImage.image_data.image_data.texture.id: 
+#                if sprite.image != self.PointImage:
                 sprite.image = self.PointImage
                 return
             
@@ -437,7 +440,7 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
      
     
     @classmethod
-    def _tile_grid_point_pairs(cls, Transform, tile_bounding_rect,  ForwardTransform=True, grid_size = (8.0, 8.0)):
+    def _tile_grid_points(cls, tile_bounding_rect, grid_size = (8.0, 8.0)):
         '''
         :return: Fills the tile area with a (MxN) grid of points.  Maps the points through the transform.  Then adds the known transform points to the results
         '''
@@ -459,23 +462,11 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
                 
         WarpedCorners = numpy.array(WarpedCorners, dtype=numpy.float32)
         
-        
         return WarpedCorners
     
-        
-        # Figure out where the corners of the texture belong
-        FixedCorners = None
-        if(ForwardTransform):
-            FixedCorners = Transform.Transform(WarpedCorners)
-        else:
-            FixedCorners = Transform.InverseTransform(WarpedCorners)
-            
-        TilePointPairs = numpy.concatenate([FixedCorners, WarpedCorners], 1)
-        
-        return TilePointPairs 
     
     @classmethod
-    def _tile_bounding_point_pairs(cls, Transform, tile_bounding_rect, ForwardTransform=True,  grid_size = (3.0, 3.0)):
+    def _tile_bounding_points(cls, tile_bounding_rect, grid_size = (3.0, 3.0)):
         '''
         :return: Returns a set of point pairs mapping the boundaries of the image tile
         '''
@@ -491,14 +482,15 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         
         xstep = int(w / grid_size[1])
         ystep = int(h / grid_size[0]) 
-        for xtemp in range(0, w + 1, xstep):
-            WarpedCorners.append([0 + y, xtemp + x])
-            WarpedCorners.append([h + y, xtemp + x])
-                
+                        
         for ytemp in range(0, h + 1, ystep):
             WarpedCorners.append([ytemp + y, 0 + x])
             WarpedCorners.append([ytemp + y, w + x])
-
+            
+        for xtemp in range(1, w, xstep):
+            WarpedCorners.append([0 + y, xtemp + x])
+            WarpedCorners.append([h + y, xtemp + x])
+            
         WarpedCorners = numpy.array(WarpedCorners, dtype=numpy.float32)
         
         return WarpedCorners
@@ -522,12 +514,15 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         '''
         :return: Returns a bounding rectangle built from points placed around the edge of the tile
         '''
-        BorderPoints = cls._tile_bounding_point_pairs(Transform=Transform, tile_bounding_rect=tile_bounding_rect, ForwardTransform=ForwardTransform, grid_size=grid_size)
+        BorderPoints = cls._tile_bounding_points(tile_bounding_rect=tile_bounding_rect, grid_size=grid_size)
         BorderPointPairs = cls._find_corresponding_points(Transform, BorderPoints, ForwardTransform=ForwardTransform)
         return nornir_imageregistration.spatial.Rectangle.CreateFromBounds(nornir_imageregistration.spatial.BoundsArrayFromPoints(BorderPointPairs[:,0:2]))
      
     @classmethod
-    def _merge_point_pairs(cls, PointsA, PointsB):
+    def _merge_point_pairs_with_transform(cls, PointsA, TransformPoints):
+
+        #This is a mess.  Transforms use the terminology Fixed & Warped to describe themselves.  The Transform function moves the warped points into fixed space.
+        PointsB = numpy.hstack((TransformPoints[:, 2:4], TransformPoints[:, 0:2]))
         if len(PointsA) > 0 and len(PointsB) > 0:
             AllPointPairs = numpy.vstack([PointsA, PointsB])
             return AllPointPairs
@@ -543,7 +538,7 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
     def _build_subtile_point_pairs(cls, Transform, z, rect, ForwardTransform=True,):
         '''Determine transform points for a subregion of the transform'''
                
-        TilePoints = cls._tile_grid_point_pairs(Transform, rect, ForwardTransform)
+        TilePoints = cls._tile_grid_points(rect)
         TilePointPairs = cls._find_corresponding_points(Transform, TilePoints, ForwardTransform=ForwardTransform)
         TransformPointPairs = numpy.concatenate(numpy.array(Transform.GetWarpedPointsInRect(rect.ToArray())), 2).squeeze()
         AllPointPairs = cls._merge_point_pairs(TilePointPairs, TransformPointPairs)
@@ -554,9 +549,9 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
     def _build_tile_point_pairs(cls, Transform, z, rect, ForwardTransform=True,):
         '''Determine transform points for the entire transform, adding points around the boundary'''
                
-        BorderPoints = cls._tile_bounding_point_pairs(Transform, rect, ForwardTransform)
+        BorderPoints = cls._tile_bounding_points(rect)
         BorderPointPairs = cls._find_corresponding_points(Transform, BorderPoints, ForwardTransform=ForwardTransform)
-        AllPointPairs = cls._merge_point_pairs(BorderPointPairs, Transform.points)
+        AllPointPairs = cls._merge_point_pairs_with_transform(BorderPointPairs, Transform.points)
         return AllPointPairs
            
     @classmethod
@@ -633,8 +628,9 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         
         if WarpedImageDataGrid[0][0] is None:
             tile_fixed_bounding_rect = nornir_imageregistration.spatial.Rectangle.CreateFromPointAndArea((0,0), ImageViewModel.TextureSize)
-            PointPairs = ImageGridTransformView._build_tile_point_pairs(self.Transform, z, tile_fixed_bounding_rect, ForwardTransform)
-            (vertarray, texarray, verts) = ImageGridTransformView._render_data_for_transform_point_pairs(PointPairs, tile_fixed_bounding_rect, z) 
+            
+            AllPointPairs = ImageGridTransformView._build_tile_point_pairs(self.Transform, z, tile_fixed_bounding_rect, ForwardTransform=ForwardTransform)
+            (vertarray, texarray, verts) = ImageGridTransformView._render_data_for_transform_point_pairs(AllPointPairs, tile_fixed_bounding_rect, z) 
             WarpedImageDataGrid[0][0] = (vertarray, texarray, verts)
         else:
             (vertarray, texarray, verts) = WarpedImageDataGrid[0][0]
@@ -679,9 +675,15 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
                     if not nornir_imageregistration.spatial.Rectangle.contains(BoundingBox, warped_bounding_rect):
                         continue
                     
-                    GridPoints = ImageGridTransformView._tile_grid_point_pairs(self.Transform, tile_fixed_bounding_rect,  ForwardTransform=True, grid_size = (8.0, 8.0))
+                    GridPoints = ImageGridTransformView._tile_grid_points(tile_fixed_bounding_rect,  grid_size = (8.0, 8.0))
                     GridPointPairs = ImageGridTransformView._find_corresponding_points(self.Transform, GridPoints, ForwardTransform=ForwardTransform)
-                    vertarray, texarray, verts = ImageGridTransformView._render_data_for_transform_point_pairs(GridPointPairs, tile_fixed_bounding_rect, z=z)
+                    TransformPoints = self.Transform.GetPointsInWarpedRect(tile_fixed_bounding_rect)
+                    if TransformPoints is None:
+                        AllPointPairs = GridPointPairs
+                    else:
+                        AllPointPairs = ImageGridTransformView._merge_point_pairs_with_transform(GridPointPairs, TransformPoints)
+                        
+                    vertarray, texarray, verts = ImageGridTransformView._render_data_for_transform_point_pairs(AllPointPairs, tile_fixed_bounding_rect, z=z)
 
                     WarpedImageDataGrid[ix][iy] = (vertarray, texarray, verts)
                 else:
