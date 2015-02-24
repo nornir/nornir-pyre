@@ -25,6 +25,8 @@ class CameraStatusBar(wx.StatusBar):
         if point is None:
             return 
         # mousePosTemplate = '%d x, %d y, %4.2f%%
+        
+        point = self.camera.ImageCoordsForMouse(point[nornir_imageregistration.iPoint.Y], point[nornir_imageregistration.iPoint.X])
   
         ZoomValue = (1.0 / (float(self.camera.scale) / float(self.camera.WindowHeight))) * 100.0
         # mousePosStr = mousePosTemplate % (x, y, ZoomValue)
