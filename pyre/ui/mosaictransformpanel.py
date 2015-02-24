@@ -14,6 +14,7 @@ import pyglet.gl as gl
 import nornir_imageregistration
 import nornir_imageregistration.spatial
 import nornir_imageregistration.transforms.utils as utils
+from pyre.state import currentMosaicConfig
 
 
 
@@ -35,8 +36,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
     
     @ImageTransformViewList.setter
     def ImageTransformViewList(self, value):
-        self._imageTransformViewList = value
-        self.center_camera()
+        self._imageTransformViewList = value 
     
     @property
     def Command(self):
@@ -54,6 +54,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         if imageTransformViewList is None:
             imageTransformViewList = [] 
          
+        currentMosaicConfig.AddOnMosaicChangeEventListener(self.OnMosaicChanged)
         self._imageTransformViewList = imageTransformViewList
         
         super(MosaicTransformPanel, self).__init__(parent, id, **kwargs)
@@ -65,6 +66,11 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         self.AddStatusBar()
         
         self.Command = None
+        
+    def OnMosaicChanged(self):
+        self.ImageTransformViewList = pyre.state.currentMosaicConfig.ImageTransformViewList
+        self.center_camera()
+        
         
     def _bind_mouse_events(self):
         self.canvas.Bind(wx.EVT_MOUSEWHEEL, self.on_mouse_scroll)
@@ -82,7 +88,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         '''Center the camera at whatever interesting thing this class displays
         '''
         
-        transforms = _get_transforms(pyre.state.currentMosaicConfig.ImageTransformViewList)
+        transforms = _get_transforms(self.ImageTransformViewList)
         bbox = utils.FixedBoundingBox(transforms)
         bbox_rect =  nornir_imageregistration.spatial.Rectangle.CreateFromBounds(bbox)
         self.camera.lookat(bbox_rect.Center)
@@ -99,12 +105,12 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         
         bounding_box = self.camera.VisibleImageBoundingBox
          
-        for itv in pyre.state.currentMosaicConfig.ImageTransformViewList:
+        for itv in self.ImageTransformViewList:
             itv.draw_textures(ShowWarped=True, BoundingBox=bounding_box, glFunc=gl.GL_FUNC_ADD)
             
         pyre.views.ClearDrawTextureState()
             
-        for itv in pyre.state.currentMosaicConfig.ImageTransformViewList:
+        for itv in self.ImageTransformViewList:
             itv.draw_points(SelectedIndex=None, BoundingBox=self.camera.VisibleImageBoundingBox, FixedSpace=True, ScaleFactor=pointScale)
             
         if not self.Command is None:

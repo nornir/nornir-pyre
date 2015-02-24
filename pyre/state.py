@@ -47,6 +47,13 @@ class StateEvents(object):
 class MosaicState(StateEvents):
     '''State for viewing a mosiac'''
     
+    def FireOnMosaicChanged(self):
+        for func in self._OnMosaicChangedEventListeners:
+            func()
+
+    def AddOnMosaicChangeEventListener(self, func):
+        self._OnMosaicChangedEventListeners.append(func)
+    
     @property
     def TransformControllerList(self):
         return self._TransformControllerList
@@ -62,6 +69,8 @@ class MosaicState(StateEvents):
     @ImageTransformViewList.setter
     def ImageTransformViewList(self, value):
         self._ImageTransformViewList = value
+        
+        self.FireOnMosaicChanged()
     
     @classmethod    
     def GetMosaicTilePath(cls, tile_filename, mosaic_file_path, tiles_dir=None):
@@ -92,6 +101,7 @@ class MosaicState(StateEvents):
         self._TransformControllerList = []
         self._ImageViewModelList = []
         self._ImageTransformViewList = []
+        self._OnMosaicChangedEventListeners = []
     
     
     def AllocateMosaicTile(self, transform, image_path, scalar):

@@ -120,7 +120,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     # apoint = core.FindOffset(fixedImageROI, warpedImageROI, MinOverlap=0.2)
 
     anglesToSearch = currentStosConfig.AnglesToSearch
-    apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25, Cluster=False)
+    apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25, SingleThread=True, Cluster=False)
 
     print("Auto-translate result: " + str(apoint))
     return apoint

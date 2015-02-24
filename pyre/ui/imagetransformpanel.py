@@ -75,8 +75,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         '''
         Constructor
         '''
-
-        self._camera = None 
+        self._camera = camera.Camera((0.5, 0.5), 1) 
         self._ImageTransformView = None
         self.SelectionMaxDistance = 1 
 
@@ -115,9 +114,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         
         self.canvas.Bind(wx.EVT_KEY_DOWN, self.on_key_press)
         self.canvas.Bind(wx.EVT_SIZE, self.on_resize)
-
-        
-
+ 
         self.DebugTickCounter = 0
         self.timer.Start(500)
         
@@ -162,8 +159,9 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
             self.UpdateRawImageWindow()
             self.TopLevelParent.Label = self._LabelPreamble() + os.path.basename(self.ImageGridTransformView.ImageViewModel.ImageFilename)
             
-        self.lookatfixedpoint((0,0), 1.0)
+        #self.lookatfixedpoint((0,0), 1.0)
 
+        self.center_camera()
         self.canvas.Refresh()
 
 
@@ -296,14 +294,17 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         
         view = self.ImageGridTransformView
         
-        try:
-            if not view is None:
-                self.camera = camera.Camera((view.width / 2.0, view.height / 2.0), max([view.width / 2.0, view.height / 2.0]))
-                self.statusBar.camera = self.camera
-        except TypeError:
-            print("Type error creating camera for ImageGridTransformView %s" % str(view))
-            self.camera = None
-            pass
+#         try:
+#             if not view is None:
+                
+                #self.camera = camera.Camera((view.width / 2.0, view.height / 2.0), max([view.width / 2.0, view.height / 2.0]))
+        fixed_bounding_box = self.TransformController.TransformModel.FixedBoundingBox
+        self.camera.lookat(fixed_bounding_box.Center)
+        self.camera.scale = fixed_bounding_box.Width
+#         except TypeError:
+#             print("Type error creating camera for ImageGridTransformView %s" % str(view))
+#             self.camera = None
+#             pass
         
         return 
 
@@ -429,6 +430,9 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
 
         if self.TransformController is None:
             return
+        
+        if e.MiddleIsDown():
+            self.center_camera()
 
         if e.ShiftDown():
             if  e.LeftDown() and self.SelectedPointIndex is None:
@@ -440,7 +444,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
             elif e.RightDown():
                 self.TransformController.TryDeletePoint(ImageX, ImageY, self.SelectionMaxDistance, FixedSpace=self.FixedSpace)
                 if self.SelectedPointIndex > self.TransformController.NumPoints:
-                    self.SelectedPointIndex = self.TransformController.NumPoints - 1
+                    self.SelectedPointIndex = self.Tra7nsformController.NumPoints - 1
 
                 history.SaveState(self.TransformController.SetPoints, self.TransformController.points)
 
