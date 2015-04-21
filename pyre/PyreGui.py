@@ -13,7 +13,7 @@ from pyre.ui import mosaictransformpanel
 import pyre
 import common
 import nornir_pools as pools
-from pyre.viewmodels.transformcontroller import TransformController
+import pyre.viewmodels.transformcontroller 
 from pyre.views.imagegridtransformview import ImageGridTransformView
 from pyre.views.compositetransformview import CompositeTransformView 
 import resources
@@ -261,6 +261,9 @@ class StosWindow(PyreWindowBase):
     stosfilename = ''
     stosdirname = ''
     imagedirname = ''
+     
+    def lookatfixedpoint(self, point, scale):
+        self.imagepanel.lookatfixedpoint(point, scale)
  
     def __init__(self, parent, windowID, title, showFixed=False, composite=False):
         
@@ -490,8 +493,8 @@ class StosWindow(PyreWindowBase):
         
 
     def OnClearAllPoints(self, e):
-        pyre.state.currentStosConfig.TransformController.SetPoints( TransformController.CreateDefault(pyre.state.currentStosConfig.FixedImageViewModel.RawImageSize,
-                                                                                                      pyre.state.currentStosConfig.WarpedImageViewModel.RawImageSize).points)
+        pyre.state.currentStosConfig.TransformController.SetPoints( pyre.viewmodels.transformcontroller.CreateDefaultTransform(pyre.state.currentStosConfig.FixedImageViewModel.RawImageSize,
+                                                                                           pyre.state.currentStosConfig.WarpedImageViewModel.RawImageSize).points)
 
 
     def OnRotateTranslate(self, e):

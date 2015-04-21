@@ -20,7 +20,7 @@ import nornir_pools as pools
 from nornir_imageregistration.alignment_record import AlignmentRecord
 
 
-def _DefaultTransform(FixedShape=None, WarpedShape=None):
+def CreateDefaultTransform(FixedShape=None, WarpedShape=None):
     # FixedSize = Utils.Images.GetImageS ize(FixedImageFullPath)
     # WarpedSize = Utils.Images.GetImageSize(WarpedImageFullPath)
  
@@ -34,6 +34,7 @@ def _DefaultTransform(FixedShape=None, WarpedShape=None):
     return alignRecord.ToTransform(FixedShape,
                                         WarpedShape)
 
+debugid = 0
 
 class  TransformController(object):
     '''
@@ -42,7 +43,7 @@ class  TransformController(object):
 
     @classmethod
     def CreateDefault(cls, FixedShape=None, WarpedShape=None):
-        T = _DefaultTransform(FixedShape, WarpedShape)
+        T = CreateDefaultTransform(FixedShape, WarpedShape)
         return TransformController(T)
 
     @property
@@ -138,7 +139,11 @@ class  TransformController(object):
         '''
         Constructor
         '''
-
+        
+        global debugid
+        self._id = debugid
+        debugid += 1
+        
         self.__OnChangeEventListeners = []
         self._TransformModel = None
 
@@ -151,6 +156,8 @@ class  TransformController(object):
 
         self.Debug = False;
         self.ShowWarped = False;
+        
+        #print("Create transform controller %d" % self._id)
 
 
     def SetPoints(self, points):
@@ -182,7 +189,7 @@ class  TransformController(object):
 
 
     def NearestPoint(self, ImagePoint, FixedSpace=True):
-        if(not FixedSpace and not self.ShowWarped):
+        if(not FixedSpace):
             Distance, index = self.TransformModel.NearestWarpedPoint(ImagePoint);
         else:
             Distance, index = self.TransformModel.NearestFixedPoint(ImagePoint);

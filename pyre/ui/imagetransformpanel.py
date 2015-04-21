@@ -13,7 +13,7 @@ from pyglet import *
 from pyre.ui import glpanel
 import wx  
 
-from pyre.state import currentStosConfig
+from pyre.state import currentStosConfig, StosState
 from pyre import history
 
 from pyre.viewmodels.transformcontroller import TransformController
@@ -266,12 +266,13 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         elif keycode == wx.WXK_F1:
             self._ImageTransformView.Debug = not self._ImageTransformView.Debug
         elif symbol == 'm':
-            LookAt = [self.camera.x, self.camera.y]
+            LookAt = [self.camera.y, self.camera.x]
 
-            if not self.FixedSpace and self.ShowWarped:
-                LookAt = self.TransformController.Transform([LookAt])
-                LookAt = LookAt[0]
+            #if not self.FixedSpace and self.ShowWarped:
+            #    LookAt = self.TransformController.Transform([LookAt])
+            #    LookAt = LookAt[0]
 
+            currentStosConfig.WindowsLookAtFixedPoint(LookAt, self.camera.scale)
             # pyre.SyncWindows(LookAt, self.camera.scale)
 
         elif symbol == 'z' and e.CmdDown():
@@ -283,8 +284,9 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         '''specify a point to look at in fixed space'''
 
         if not self.FixedSpace:
-            if not self.TransformController is None:
-                point = self.TransformController.InverseTransform([point]).flat
+            if not self.ShowWarped:
+                if not self.TransformController is None:
+                    point = self.TransformController.InverseTransform([point]).flat
             
         super(ImageTransformViewPanel, self).lookatfixedpoint(point, scale)
         
@@ -339,8 +341,8 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
         else:
             #This looks backwards, and it is.  The transform object itself refers to warped and fixed space.  Depending on how warped is interpreted it means 
             #the points that are warped or the points that have been warped.  It needs to be refactored to make the names unabiguous
-            FixedSpacePoints = self.ShowWarped
-            FixedSpaceLines = self.ShowWarped
+            FixedSpacePoints = self.FixedSpace or self.ShowWarped
+            FixedSpaceLines = self.FixedSpace or self.ShowWarped
             
         if self.ShowLines:
             self._ImageTransformView.draw_lines(draw_in_fixed_space=FixedSpaceLines)
@@ -403,7 +405,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
             zdelta = (1 + (-scroll_y / 20))
             
             new_scale = self.camera.scale * zdelta 
-            max_image_dimension_value = max([self.TransformController.width , self.TransformController.height ])
+            max_image_dimension_value = self.max_image_dimension()
             if new_scale > max_image_dimension_value * 2.0:
                 new_scale = max_image_dimension_value * 2.0
 
@@ -413,7 +415,10 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
             self.camera.scale = new_scale
             
         self.statusBar.update_status_bar(self.LastMousePosition)
-
+        
+    def max_image_dimension(self):
+        return max([self.ImageGridTransformView.width , self.ImageGridTransformView.height ]) 
+    
 
     def on_mouse_release(self, e):
         self.SelectedPointIndex = None
@@ -455,7 +460,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
             else:
                 distance, index = (None, None)
                 if not self.composite:
-                    distance, index = self.TransformController.NearestPoint([ImageY, ImageX], FixedSpace=self.FixedSpace)
+                    distance, index = self.TransformController.NearestPoint([ImageY, ImageX], FixedSpace=self.ShowWarped)
                 else:
                     distance, index = self.TransformController.NearestPoint([ImageY, ImageX], FixedSpace=True)
 

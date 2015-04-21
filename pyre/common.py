@@ -19,6 +19,7 @@ from scipy.ndimage import imread
 from commandhistory import history
 
 from launcher import Windows
+import nornir_imageregistration
 
 
 def SaveRegisteredWarpedImage(fileFullPath, transform, warpedImage):
@@ -109,7 +110,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
                             fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea, extrapolate=True)
 
-    fixedImageROI = assemble.ExtractRegion(currentStosConfig.FixedImageViewModel.Image, FixedBotLeft, alignmentArea)
+    fixedImageROI = nornir_imageregistration.core.CropImage(currentStosConfig.FixedImageViewModel.Image, FixedBotLeft[1], FixedBotLeft[0], alignmentArea[1], alignmentArea[0])
 
     # core.ShowGrayscale([fixedImageROI, warpedImageROI])
 

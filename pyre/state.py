@@ -6,6 +6,7 @@ Created on Oct 24, 2012
 import sys
 import numpy
 import wx
+import pyre
 import nornir_imageregistration.tileset
 from nornir_imageregistration.files.stosfile import StosFile
 from nornir_imageregistration.mosaic import Mosaic
@@ -16,6 +17,7 @@ from pyre.views.imagegridtransformview import ImageGridTransformView
 from pyre.viewmodels.transformcontroller import TransformController
 from nornir_imageregistration.transforms.factory import LoadTransform
 import nornir_pools
+
 
 # app = wx.App(False)
 currentStosConfig = None
@@ -181,7 +183,17 @@ class StosState(StateEvents):
     AlignmentTileSize = [128, 128]
     AnglesToSearch = numpy.linspace(-7.5, 7.5, 11)
     
+    @property
+    def FixedWindow(self):
+        return pyre.Windows["Fixed"]
     
+    @property
+    def WarpedWindow(self):
+        return pyre.Windows["Warped"]
+    
+    @property
+    def CompositeWindow(self):
+        return pyre.Windows["Composite"]
     
     @property
     def FixedImageFullPath(self):
@@ -348,6 +360,13 @@ class StosState(StateEvents):
                 self.LoadWarpedImage(nextPath)
             else:
                 print("Could not find fixed image: " + obj.MappedImageFullPath)
+                
+    def WindowsLookAtFixedPoint(self, fixed_point, scale):
+        '''Force all open windows to look at this point'''
+         
+        self.FixedWindow.lookatfixedpoint(fixed_point, scale)
+        self.WarpedWindow.lookatfixedpoint(fixed_point, scale)
+        self.CompositeWindow.lookatfixedpoint(fixed_point, scale)
                 
         
 
