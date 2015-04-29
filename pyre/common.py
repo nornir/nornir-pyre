@@ -112,9 +112,9 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     
     # Pull image subregions
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
-                            fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea, extrapolate=True)
+                            fixedImage.shape, warpedImage, botleft=FixedRectangle.BottomLeft, area=FixedRectangle.Size, extrapolate=True)
 
-    fixedImageROI = nornir_imageregistration.core.CropImage(currentStosConfig.FixedImageViewModel.Image, FixedRectangle.BottomLeft[1], FixedRectangle.BottomLeft[0], FixedRectangle.Area[1], FixedRectangle.Area[0])
+    fixedImageROI = nornir_imageregistration.core.CropImage(currentStosConfig.FixedImageViewModel.Image, FixedRectangle.BottomLeft[1], FixedRectangle.BottomLeft[0], int(FixedRectangle.Size[1]), int(FixedRectangle.Size[0]))
 
     # nornir_imageregistration.core.ShowGrayscale([fixedImageROI, warpedImageROI])
 
