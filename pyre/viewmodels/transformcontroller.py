@@ -263,6 +263,9 @@ class  TransformController(object):
 
     def GetNearestPoint(self, index, FixedSpace=False):
         NearestPoint = None
+        if index > len(self.TransformModel.WarpedPoints):
+            return None
+        
         if(not FixedSpace  and not self.ShowWarped):
             NearestPoint = copy.copy(self.TransformModel.WarpedPoints[index])
         else:

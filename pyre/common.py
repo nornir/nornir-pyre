@@ -102,17 +102,21 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
 
     if alignmentArea is None:
         alignmentArea = currentStosConfig.AlignmentTileSize
+        
+    FixedRectangle = nornir_imageregistration.Rectangle.CreateFromPointAndArea(point=[controlpoint[0] - (alignmentArea[0] / 2.0),
+                                                                                   controlpoint[1] - (alignmentArea[1] / 2.0)],
+                                                                             area=alignmentArea)
 
-    FixedBotLeft = [controlpoint[0] - (alignmentArea[0] / 2.0),
-                    controlpoint[1] - (alignmentArea[1] / 2.0)]
-
+    FixedRectangle = nornir_imageregistration.Rectangle.SafeRound(FixedRectangle)
+    FixedRectangle = nornir_imageregistration.Rectangle.change_area(FixedRectangle, alignmentArea)
+    
     # Pull image subregions
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
                             fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea, extrapolate=True)
 
-    fixedImageROI = nornir_imageregistration.core.CropImage(currentStosConfig.FixedImageViewModel.Image, FixedBotLeft[1], FixedBotLeft[0], alignmentArea[1], alignmentArea[0])
+    fixedImageROI = nornir_imageregistration.core.CropImage(currentStosConfig.FixedImageViewModel.Image, FixedRectangle.BottomLeft[1], FixedRectangle.BottomLeft[0], FixedRectangle.Area[1], FixedRectangle.Area[0])
 
-    # core.ShowGrayscale([fixedImageROI, warpedImageROI])
+    # nornir_imageregistration.core.ShowGrayscale([fixedImageROI, warpedImageROI])
 
     # pool = Pools.GetGlobalMultithreadingPool()
 
