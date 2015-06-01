@@ -18,12 +18,12 @@ class GLPanel(wx.Panel):
     pygletcontext = None
     wxcontext = None
 
-    def __init__(self, parent, id, pos = wx.DefaultPosition,
+    def __init__(self, parent, window_id, pos = wx.DefaultPosition,
                  size = wx.DefaultSize, style = 0):
         # Forcing a no full repaint to stop flickering
         style = style | wx.NO_FULL_REPAINT_ON_RESIZE
         # call super function
-        super(GLPanel, self).__init__(parent, id, pos, size, style)
+        super(GLPanel, self).__init__(parent, window_id, pos, size, style)
 
         # init gl canvas data
         self.GLinitialized = False
@@ -99,7 +99,7 @@ class GLPanel(wx.Panel):
         # clean up the pyglet OpenGL context
         # GLPanel.pygletcontext.destroy()
         # call the super method
-        super(wx.Panel, self).Destroy()
+        super(GLPanel, self).Destroy()
 
 
     #==========================================================================
@@ -188,8 +188,8 @@ class GLPanel(wx.Panel):
 
 class TestGlPanel(GLPanel):
 
-    def __init__(self, parent, id = wx.ID_ANY, pos = (10, 10)):
-        super(TestGlPanel, self).__init__(parent, id, wx.DefaultPosition, wx.DefaultSize, 0)
+    def __init__(self, parent, window_id = wx.ID_ANY, pos = (10, 10)):
+        super(TestGlPanel, self).__init__(parent, window_id, wx.DefaultPosition, wx.DefaultSize, 0)
         self.spritepos = pos
 
     def create_objects(self):

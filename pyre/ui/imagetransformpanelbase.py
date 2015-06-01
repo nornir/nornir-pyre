@@ -31,13 +31,13 @@ class ImageTransformPanelBase(glpanel.GLPanel):
             assert(isinstance(value, pyre.ui.camera.Camera))
             value.AddOnChangeEventListener(self.OnCameraChanged)
 
-    def __init__(self, parent, id=-1, **kwargs):
+    def __init__(self, parent, window_id=-1, **kwargs):
         '''
         Constructor
         '''
         self._camera = pyre.ui.camera.Camera((0,0), 1)
         
-        super(ImageTransformPanelBase, self).__init__(parent, id, **kwargs)
+        super(ImageTransformPanelBase, self).__init__(parent, window_id, **kwargs)
         
         self.AddStatusBar()
         
@@ -89,9 +89,9 @@ class ImageTransformPanelBase(glpanel.GLPanel):
         '''Center the camera at whatever interesting thing this class displays
         '''
         
-        raise NotImplemented("Abstract function center_camera not implemented")
+        raise NotImplementedError("Abstract function center_camera not implemented")
         
     
     def draw_objects(self):
-        raise NotImplemented("draw object is not implemented")        
+        raise NotImplementedError("draw object is not implemented")        
         

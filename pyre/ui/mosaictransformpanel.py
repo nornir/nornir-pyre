@@ -47,7 +47,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         self._command = value
     
 
-    def __init__(self, parent, id=-1, imageTransformViewList=None, **kwargs):
+    def __init__(self, parent, window_id=-1, imageTransformViewList=None, **kwargs):
         '''
         Constructor
         '''
@@ -57,7 +57,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         currentMosaicConfig.AddOnMosaicChangeEventListener(self.OnMosaicChanged)
         self._imageTransformViewList = imageTransformViewList
         
-        super(MosaicTransformPanel, self).__init__(parent, id, **kwargs)
+        super(MosaicTransformPanel, self).__init__(parent, window_id, **kwargs)
         
         self.LastMousePosition = None
         
