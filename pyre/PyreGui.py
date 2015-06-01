@@ -137,8 +137,8 @@ class PyreWindowBase(wx.Frame):
         # position = 0, 1
         ######
         if desiredDisplays == 1:
-            halfY = sizes[position][3] / 2
             halfX = sizes[position][2] / 2
+            halfY = sizes[position][3] / 2
             if self.Title == "Fixed Image" or self.Title == pyre.Windows['Fixed'].Title:
                 self.MoveXY(sizes[position][0], sizes[position][1])
                 self.SetSizeWH(halfX, halfY)
@@ -150,13 +150,13 @@ class PyreWindowBase(wx.Frame):
                 self.SetSizeWH(sizes[position][2], halfY)
 
         elif desiredDisplays == 2 and count >= 2:
-            halfX = (sizes[position[1]][2] - sizes[position[1]][0]) / 2
-            halfY = (sizes[position[1]][3] - sizes[position[1]][1]) / 2
+            halfX = sizes[position[1]][2] / 2
+            halfY = sizes[position[1]][3] / 2
             if self.Title == "Fixed Image" or self.Title == pyre.Windows['Fixed'].Title:
                 self.MoveXY(sizes[position[1]][0], sizes[position[1]][1])
                 self.SetSizeWH(sizes[position[1]][2], halfY)
             elif self.Title == "Warped Image" or self.Title == pyre.Windows['Warped'].Title:
-                self.MoveXY(sizes[position[1]][0], halfY)
+                self.MoveXY(sizes[position[1]][0], halfY + sizes[position[1]][1])
                 self.SetSizeWH(sizes[position[1]][2], halfY)
             else:
                 self.MoveXY(sizes[position[0]][0], sizes[position[0]][1])
