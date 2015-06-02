@@ -35,7 +35,7 @@ def Run():
     Windows["Fixed"] = PyreGui.StosWindow(None, "Fixed", 'Fixed Image', showFixed=True)
     Windows["Warped"] = PyreGui.StosWindow(None, "Warped", 'Warped Image')
     Windows["Composite"] = PyreGui.StosWindow(None, "Composite", 'Composite', showFixed=True, composite=True)
-    Windows["Mosaic"] = PyreGui.MosaicWindow(None, "Mosaic", 'Mosaic')
+    #Windows["Mosaic"] = PyreGui.MosaicWindow(None, "Mosaic", 'Mosaic')
     
     LoadDataFromArgs(arg_values)
 

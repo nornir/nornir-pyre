@@ -333,8 +333,6 @@ class StosState(StateEvents):
             self.WarpedImageViewModel = ivm
         
         
- #       for filename, transform in mosaic.ImageToTransform.items():
- 
     def LoadStos(self, stosFullPath):
 
         dirname = os.path.dirname(stosFullPath)
@@ -367,8 +365,7 @@ class StosState(StateEvents):
         self.FixedWindow.lookatfixedpoint(fixed_point, scale)
         self.WarpedWindow.lookatfixedpoint(fixed_point, scale)
         self.CompositeWindow.lookatfixedpoint(fixed_point, scale)
-                
-        
+
 
 currentStosConfig = StosState()
 currentMosaicConfig = MosaicState()

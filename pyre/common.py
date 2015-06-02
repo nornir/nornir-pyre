@@ -96,13 +96,8 @@ def RotateTranslateWarpedImage(LimitImageSize=False):
         history.SaveState(currentStosConfig.TransformController.SetPoints, currentStosConfig.TransformController.Transform.points)
 
 
-def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea=None):
+def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea, anglesToSearch):
     '''Try to use the Composite view to render the two tiles we need for alignment'''
-    from pyre.state import currentStosConfig
-
-    if alignmentArea is None:
-        alignmentArea = currentStosConfig.AlignmentTileSize
-        
     FixedRectangle = nornir_imageregistration.Rectangle.CreateFromPointAndArea(point=[controlpoint[0] - (alignmentArea[0] / 2.0),
                                                                                    controlpoint[1] - (alignmentArea[1] / 2.0)],
                                                                              area=alignmentArea)
@@ -114,7 +109,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
                             fixedImage.shape, warpedImage, botleft=FixedRectangle.BottomLeft, area=FixedRectangle.Size, extrapolate=True)
 
-    fixedImageROI = nornir_imageregistration.core.CropImage(currentStosConfig.FixedImageViewModel.Image, FixedRectangle.BottomLeft[1], FixedRectangle.BottomLeft[0], int(FixedRectangle.Size[1]), int(FixedRectangle.Size[0]))
+    fixedImageROI = nornir_imageregistration.core.CropImage(fixedImage.copy(), FixedRectangle.BottomLeft[1], FixedRectangle.BottomLeft[0], int(FixedRectangle.Size[1]), int(FixedRectangle.Size[0]))
 
     # nornir_imageregistration.core.ShowGrayscale([fixedImageROI, warpedImageROI])
 
@@ -123,8 +118,7 @@ def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpo
     # task = pool.add_task("AttemptAlignPoint", core.FindOffset, fixedImageROI, warpedImageROI, MinOverlap = 0.2)
     # apoint = task.wait_return()
     # apoint = core.FindOffset(fixedImageROI, warpedImageROI, MinOverlap=0.2)
-
-    anglesToSearch = currentStosConfig.AnglesToSearch
+ 
     apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25, SingleThread=True, Cluster=False)
 
     print("Auto-translate result: " + str(apoint))

@@ -345,10 +345,12 @@ class  TransformController(object):
                                                 currentStosConfig.FixedImageViewModel.Image,
                                                 currentStosConfig.WarpedImageViewModel.Image,
                                                 fixed,
-                                                warped)
+                                                warped,
+                                                alignmentArea=currentStosConfig.AlignmentTileSize,
+                                                anglesToSearch=currentStosConfig.AnglesToSearch)
                 indextotask[i_point] = task       
     
-            for i_point in indextotask:
+            for i_point in sorted(indextotask.keys()):
                 task = indextotask[i_point]
                 record = task.wait_return()
     
@@ -362,15 +364,18 @@ class  TransformController(object):
                     continue
     
                 offsets[i_point, :] = np.array([dy, dx])
+                del indextotask[i_point]
         else:
             i_point = i_points[0]
             fixed = self.GetFixedPoint(i_point)
             warped = self.GetWarpedPoint(i_point)
             record = common.AttemptAlignPoint(self,
-                                     currentStosConfig.FixedImageViewModel.Image,
-                                     currentStosConfig.WarpedImageViewModel.Image,
-                                     fixed,
-                                     warped)
+                                    currentStosConfig.FixedImageViewModel.Image,
+                                    currentStosConfig.WarpedImageViewModel.Image,
+                                    fixed,
+                                    warped,
+                                    alignmentArea=currentStosConfig.AlignmentTileSize,
+                                    anglesToSearch=currentStosConfig.AnglesToSearch)
             
             if record is None:
                 print "point #" + str(i_point) + " returned None for alignment"
