@@ -19,15 +19,16 @@ from scipy.ndimage import imread
 from commandhistory import history
 
 from launcher import Windows
+import nornir_imageregistration
 
 
 def SaveRegisteredWarpedImage(fileFullPath, transform, warpedImage):
-    from state import currentConfig
+    from pyre.state import currentStosConfig
 
     # registeredImage = assemble.WarpedImageToFixedSpace(transform, Config.FixedImageArray.Image.shape, Config.WarpedImageArray.Image)
     registeredImage = AssembleHugeRegisteredWarpedImage(transform,
-                                                        currentConfig.FixedImageViewModel.Image.shape,
-                                                        currentConfig.WarpedImageViewModel.Image)
+                                                        currentStosConfig.FixedImageViewModel.Image.shape,
+                                                        currentStosConfig.WarpedImageViewModel.Image)
 
     imsave(fileFullPath, registeredImage)
 
@@ -61,7 +62,7 @@ def SyncWindows(LookAt, scale):
 
     warpedLookAt = LookAt
     if(Windows['Warped'].IsShown()):
-        warpedLookAt = currentConfig._TransformViewModel.InverseTransform([LookAt])
+        warpedLookAt = currentStosConfig._TransformViewModel.InverseTransform([LookAt])
         warpedLookAt = warpedLookAt[0]
 
 
@@ -75,53 +76,50 @@ def SyncWindows(LookAt, scale):
 
 
 def RotateTranslateWarpedImage(LimitImageSize=False):
-    from state import currentConfig
+    from pyre.state import currentStosConfig
 
     largestdimension = 2047
     if LimitImageSize:
         largestdimension = 818
 
-    if not (currentConfig.FixedImageViewModel is None or currentConfig.WarpedImageViewModel is None):
-        alignRecord = stos.SliceToSliceBruteForce(currentConfig.FixedImageViewModel.Image,
-                                                                 currentConfig.WarpedImageViewModel.Image,
+    if not (currentStosConfig.FixedImageViewModel is None or currentStosConfig.WarpedImageViewModel is None):
+        alignRecord = stos.SliceToSliceBruteForce(currentStosConfig.FixedImageViewModel.Image,
+                                                                 currentStosConfig.WarpedImageViewModel.Image,
                                                                   LargestDimension=largestdimension,
                                                                   Cluster=False)
         # alignRecord = IrTools.alignment_record.AlignmentRecord((22.67, -4), 100, -132.5)
         print "Alignment found: " + str(alignRecord)
-        transform = alignRecord.ToTransform(currentConfig.FixedImageViewModel.RawImageSize,
-                                             currentConfig.WarpedImageViewModel.RawImageSize)
-        currentConfig.TransformViewModel.SetPoints(transform.points)
+        transform = alignRecord.ToTransform(currentStosConfig.FixedImageViewModel.RawImageSize,
+                                             currentStosConfig.WarpedImageViewModel.RawImageSize)
+        currentStosConfig.TransformController.SetPoints(transform.points)
 
-        history.SaveState(currentConfig.TransformViewModel.SetPoints, currentConfig.TransformViewModel.TransformModel.points)
-        # Config.TransformViewModel = TransformViewModel(Config.CurrentTransform)
+        history.SaveState(currentStosConfig.TransformController.SetPoints, currentStosConfig.TransformController.Transform.points)
 
 
-def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea=None):
+def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea, anglesToSearch):
     '''Try to use the Composite view to render the two tiles we need for alignment'''
-    from state import currentConfig
+    FixedRectangle = nornir_imageregistration.Rectangle.CreateFromPointAndArea(point=[controlpoint[0] - (alignmentArea[0] / 2.0),
+                                                                                   controlpoint[1] - (alignmentArea[1] / 2.0)],
+                                                                             area=alignmentArea)
 
-    if alignmentArea is None:
-        alignmentArea = currentConfig.AlignmentTileSize
-
-    FixedBotLeft = [controlpoint[0] - (alignmentArea[0] / 2.0),
-                    controlpoint[1] - (alignmentArea[1] / 2.0)]
-
+    FixedRectangle = nornir_imageregistration.Rectangle.SafeRound(FixedRectangle)
+    FixedRectangle = nornir_imageregistration.Rectangle.change_area(FixedRectangle, alignmentArea)
+    
     # Pull image subregions
     warpedImageROI = assemble.WarpedImageToFixedSpace(transform,
-                            fixedImage.shape, warpedImage, botleft=FixedBotLeft, area=alignmentArea, extrapolate=True)
+                            fixedImage.shape, warpedImage, botleft=FixedRectangle.BottomLeft, area=FixedRectangle.Size, extrapolate=True)
 
-    fixedImageROI = assemble.ExtractRegion(currentConfig.FixedImageViewModel.Image, FixedBotLeft, alignmentArea)
+    fixedImageROI = nornir_imageregistration.core.CropImage(fixedImage.copy(), FixedRectangle.BottomLeft[1], FixedRectangle.BottomLeft[0], int(FixedRectangle.Size[1]), int(FixedRectangle.Size[0]))
 
-    # core.ShowGrayscale([fixedImageROI, warpedImageROI])
+    # nornir_imageregistration.core.ShowGrayscale([fixedImageROI, warpedImageROI])
 
     # pool = Pools.GetGlobalMultithreadingPool()
 
     # task = pool.add_task("AttemptAlignPoint", core.FindOffset, fixedImageROI, warpedImageROI, MinOverlap = 0.2)
     # apoint = task.wait_return()
     # apoint = core.FindOffset(fixedImageROI, warpedImageROI, MinOverlap=0.2)
-
-    anglesToSearch = currentConfig.AnglesToSearch
-    apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25, Cluster=False)
+ 
+    apoint = stos.SliceToSliceBruteForce(fixedImageROI, warpedImageROI, AngleSearchRange=anglesToSearch, MinOverlap=0.25, SingleThread=True, Cluster=False)
 
     print("Auto-translate result: " + str(apoint))
     return apoint
@@ -131,7 +129,7 @@ def Run():
 
 
 if __name__ == "__main__":
-    from state import currentConfig
+    from pyre.state import currentStosConfig
 
     nornir_shared.misc.SetupLogging(os.curdir, Level=logging.WARNING)
 
@@ -141,16 +139,16 @@ if __name__ == "__main__":
 
         (root, ext) = os.path.splitext(singleArg)
         if ext.lower() == ".stos":
-            currentConfig.LoadStos(singleArg)
+            currentStosConfig.LoadStos(singleArg)
     else:
         parser = pyre.ProcessArgs()
         args = parser.parse_args()
 
         if not args.WarpedImageFullPath is None:
-            currentConfig.LoadWarpedImage(args.WarpedImageFullPath)
+            currentStosConfig.LoadWarpedImage(args.WarpedImageFullPath)
 
         if not args.FixedImageFullPath is None:
-            currentConfig.LoadFixedImage(args.FixedImageFullPath)
+            currentStosConfig.LoadFixedImage(args.FixedImageFullPath)
 
     pyre.Run()
 

@@ -7,364 +7,41 @@ import wx
 import os
 from nornir_imageregistration.files.stosfile import StosFile
 import nornir_imageregistration.transforms.factory
-import pygletwx
-import imagetransformpanel
+from pyre.ui import glpanel
+from pyre.ui import imagetransformpanel
+from pyre.ui import mosaictransformpanel
 import pyre
 import common
-import nornir_pools as Pools
-from transformviewmodel import TransformViewModel
-from imagetransformview import ImageTransformView
-from compositetransformview import CompositeTransformView
+import nornir_pools as pools
+import pyre.viewmodels.transformcontroller 
+from pyre.views.imagegridtransformview import ImageGridTransformView
+from pyre.views.compositetransformview import CompositeTransformView 
 import resources
 
-import state
+import pyre.state
 
-class MyFrame(wx.Frame):
-
-    stosfilename = ''
-    stosdirname = ''
-    imagedirname = ''
-
+class PyreWindowBase(wx.Frame):
+    '''The window which we use for mosaic views'''
+    
+    
+        
     @property
     def ID(self):
         return self._ID
-
-
-    def __init__(self, parent, windowID, title, showFixed=False, composite=False):
+    
+    def __init__(self, parent, windowID, title):
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
-
+        
         print "Parent:" + str(self.Parent)
 
         self._ID = windowID
-        # self.imagepanel = wx.Panel(self, -1)
-
-        self.showFixed = showFixed
-        self.Composite = composite
-
-        self.FixedImageFullPath = None
-        self.WarpedImageFullPath = None
-
-        ###FOR DEBUGGING####
-        # DataFullPath = os.path.join(os.getcwd(), "..", "Test","Data","Images")
-        # FixedImageFullPath = os.path.join(DataFullPath, "0225_mosaic_64.png")
-        # WarpedImageFullPath = os.path.join(DataFullPath, "0226_mosaic_64.png")
-        # pyre.IrTweakInit(FixedImageFullPath, WarpedImageFullPath)
-        ####################
-
-        self.imagepanel = imagetransformpanel.ImageTransformViewPanel(parent=self,
-                                              TransformViewModel=None,
-                                              ImageTransformView=None,
-                                              FixedSpace=self.showFixed,
-                                              composite=self.Composite)
-
-        # pyre.Config.TransformViewModel,
-        # pyre.Config.FixedTransformView
-
-        # self.control = wx.StaticText(panel, -1, README_Import(self), size=(800,-1))
-
-        # Populate menu options into a File Dropdown menu.
-        menuBar = wx.MenuBar()
-
-        filemenu = self.__CreateFileMenu()
-        menuBar.Append(filemenu, "&File")
-
-        opsmenu = self.__CreateOpsMenu()
-        menuBar.Append(opsmenu, "&Operations")
-
-        self.windmenu = self.__CreateWindowsMenu()
-        menuBar.Append(self.windmenu, "&Windows")
-
-        self.SetMenuBar(menuBar)
-
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
-
-        # Allows Drag and Drop
-        dt = FileDrop(self)
-        self.SetDropTarget(dt)
-
-        # self.imagepanel.SetDropTarget(FileDrop(self.imagepanel))
-
-        # self.SetDropTarget(TextDrop(self))
-        # self.DragAcceptFiles(True)
-
-        # print "Drop target set"
-
-        # print str(self.GetDropTarget())
-
-        self.Show(True)
-        self.setPosition()
-
-        # Make sure we have a GL context before initializing view window
-        wx.CallAfter(self.UpdateRawImageWindow)
-
-
-    def __CreateWindowsMenu(self):
-        menu = wx.Menu()
-        windowSubMenu = wx.Menu()
-
-        displayCount = wx.Display_GetCount()
-
-        if displayCount == 1:
-            pass
-        elif displayCount == 2:
-            submenuWindow1 = windowSubMenu.Append(wx.ID_ANY, "Left 1 Window View")
-            submenuWindow2 = windowSubMenu.Append(wx.ID_ANY, "Right 1 Window View")
-            windowSubMenu.AppendSeparator()
-            submenuWindow3 = windowSubMenu.Append(wx.ID_ANY, "2 Window View")
-
-            self.Bind(wx.EVT_MENU, self.OnLeft1WindowView, submenuWindow1)
-            self.Bind(wx.EVT_MENU, self.OnRight1WindowView, submenuWindow2)
-            self.Bind(wx.EVT_MENU, self.On2WindowView, submenuWindow3)
-
-            menu.AppendMenu(wx.ID_ANY, "&Window Options", windowSubMenu)
-
-        elif displayCount >= 3:
-            submenuWindow1 = windowSubMenu.Append(wx.ID_ANY, "Left 1 Window View")
-            submenuWindow2 = windowSubMenu.Append(wx.ID_ANY, "Center 1 Window View")
-            submenuWindow3 = windowSubMenu.Append(wx.ID_ANY, "Right 1 Window View")
-            windowSubMenu.AppendSeparator()
-            submenuWindow4 = windowSubMenu.Append(wx.ID_ANY, "Left 2 Window View")
-            submenuWindow5 = windowSubMenu.Append(wx.ID_ANY, "Right 2 Window View")
-            windowSubMenu.AppendSeparator()
-            submenuWindow6 = windowSubMenu.Append(wx.ID_ANY, "3 Window View")
-
-            self.Bind(wx.EVT_MENU, self.OnLeft1WindowView, submenuWindow1)
-            self.Bind(wx.EVT_MENU, self.OnCenter1WindowView, submenuWindow2)
-            self.Bind(wx.EVT_MENU, self.OnRight1WindowView, submenuWindow3)
-            self.Bind(wx.EVT_MENU, self.On2WindowView, submenuWindow4)
-            self.Bind(wx.EVT_MENU, self.OnRight2WindowView, submenuWindow5)
-            self.Bind(wx.EVT_MENU, self.On3WindowView, submenuWindow6)
-
-            menu.AppendMenu(wx.ID_ANY, "&Two Window Options", windowSubMenu)
-
-        self.menuShowFixedImage = menu.Append(wx.ID_ANY, "&Fixed Image", kind=wx.ITEM_CHECK)
-        menu.Check(self.menuShowFixedImage.GetId(), True)
-        self.Bind(wx.EVT_MENU, self.OnShowFixedWindow, self.menuShowFixedImage)
-
-        self.menuShowWarpedImage = menu.Append(wx.ID_ANY, "&Warped Image", kind=wx.ITEM_CHECK)
-        menu.Check(self.menuShowWarpedImage.GetId(), True)
-        self.Bind(wx.EVT_MENU, self.OnShowWarpedWindow, self.menuShowWarpedImage)
-
-        self.menuShowCompositeImage = menu.Append(wx.ID_ANY, "&Composite Image", kind=wx.ITEM_CHECK)
-        menu.Check(self.menuShowCompositeImage.GetId(), True)
-        self.Bind(wx.EVT_MENU, self.OnShowCompositeWindow, self.menuShowCompositeImage)
-
-        menu.AppendSeparator()
-
-        menuRestoreOrientation = menu.Append(wx.ID_ANY, "&Restore Orientation")
-        self.Bind(wx.EVT_MENU, self.OnRestoreOrientation, menuRestoreOrientation)
-
-        return menu
-
-
-    def __CreateOpsMenu(self):
-        menu = wx.Menu()
-
-        menuRotationTranslation = menu.Append(wx.ID_ANY, "&Rotate translate estimate")
-        self.Bind(wx.EVT_MENU, self.OnRotateTranslate, menuRotationTranslation)
-
-        menu.AppendSeparator()
-
-        menuInstructions = menu.Append(wx.ID_ABOUT, "&Keyboard Instructions")
-        self.Bind(wx.EVT_MENU, self.OnInstructions, menuInstructions)
-
-        menuClear = menu.Append(wx.ID_ANY, "&Clear All Points")
-        self.Bind(wx.EVT_MENU, self.OnClearAllPoints, menuClear)
-
-        return menu
-
-
-    def __CreateFileMenu(self):
-
-        filemenu = wx.Menu()
-
-        # Menu options
-        menuOpenPyre = filemenu.Append(wx.ID_ANY, "&Open stos file")
-        self.Bind(wx.EVT_MENU, self.OnOpenStos, menuOpenPyre)
-
-        menuOpenFixedImage = filemenu.Append(wx.ID_ANY, "&Open Fixed Image")
-        self.Bind(wx.EVT_MENU, self.OnOpenFixedImage, menuOpenFixedImage)
-
-        menuOpenWarpedImage = filemenu.Append(wx.ID_ANY, "&Open Warped Image")
-        self.Bind(wx.EVT_MENU, self.OnOpenWarpedImage, menuOpenWarpedImage)
-
-        filemenu.AppendSeparator()
-
-        menuSaveStos = filemenu.Append(wx.ID_ANY, "&Save Stos File")
-        self.Bind(wx.EVT_MENU, self.OnSaveStos, menuSaveStos)
-
-        menuSaveWarpedImage = filemenu.Append(wx.ID_ANY, "&Save Warped Image")
-        self.Bind(wx.EVT_MENU, self.OnSaveWarpedImage, menuSaveWarpedImage)
-
-        filemenu.AppendSeparator()
-
-        menuExit = filemenu.Append(wx.ID_EXIT, "&Exit")
-        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
-
-        return filemenu
-
-
-    def UpdateRawImageWindow(self):
-
-        # if hasattr(self, 'imagepanel'):
-        #    del self.imagepanel
-
-        imageTransformView = None
-        if self.Composite:
-            imageTransformView = CompositeTransformView(state.currentConfig.FixedImageViewModel,
-                                                    state.currentConfig.WarpedImageViewModel,
-                                                    state.currentConfig.TransformViewModel)
-        else:
-            imageViewModel = state.currentConfig.FixedImageViewModel
-            if not self.showFixed:
-                imageViewModel = state.currentConfig.WarpedImageViewModel
-
-            imageTransformView = ImageTransformView(imageViewModel,
-                                                    state.currentConfig.TransformViewModel)
-
-        self.imagepanel.TransformViewModel = state.currentConfig.TransformViewModel
-        self.imagepanel.ImageTransformView = imageTransformView
-
-
+    
     def ToggleWindowShown(self):
         if self.IsShown():
             self.Hide()
         else:
             self.Show()
-
-
-    def OnShowFixedWindow(self, e):
-        pyre.ToggleWindow('Fixed')
-
-
-    def OnShowWarpedWindow(self, e):
-        pyre.ToggleWindow('Warped')
-
-
-    def OnShowCompositeWindow(self, e):
-        pyre.ToggleWindow('Composite')
-
-
-    def OnRestoreOrientation(self, e):
-        pyre.Windows['Composite'].setPosition()
-        pyre.Windows['Warped'].setPosition()
-        pyre.Windows['Fixed'].setPosition()
-
-
-    def OnClose(self, e):
-        self.Shown = not self.Shown
-        if not pyre.AnyVisibleWindows():
-            self.OnExit()
-
-
-    def OnExit(self, e=None):
-        pyre.Exit()
-
-
-    def OnInstructions(self, e):
-
-        readme = resources.README()
-        dlg = wx.MessageDialog(self, readme, "Keyboard Instructions", wx.OK)
-        dlg.ShowModal()
-        dlg.Destroy()
-
-    def OnClearAllPoints(self, e):
-        state.currentConfig.TransformViewModel = TransformViewModel.CreateDefault(state.currentConfig.FixedImageViewModel.RawImageSize,
-                                                                 state.currentConfig.WarpedImageViewModel.RawImageSize)
-
-#
-#    def UpdateFromConfig(self):
-#
-#        if Config.CurrentTransform is None:
-#            return
-#
-#        self.imagepanel.TransformViewModel = Config.TransformViewModel
-#
-#        if self.imagepanel.composite:
-#            self.imagepanel.ImageTransformView = Config.CompositeView
-#        elif self.showFixed:
-#            self.imagepanel.ImageTransformView = Config.FixedTransformView
-#        else:
-#            self.imagepanel.ImageTransformView = Config.WarpedTransformView
-
-
-    def OnRotateTranslate(self, e):
-        common.RotateTranslateWarpedImage()
-
-
-    def OnOpenFixedImage(self, e):
-        dlg = wx.FileDialog(self, "Choose a file", MyFrame.imagedirname, "", "*.*", wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            filename = str(dlg.GetFilename())
-            MyFrame.imagedirname = str(dlg.GetDirectory())
-
-            state.currentConfig.LoadFixedImage(os.path.join(MyFrame.imagedirname, filename))
-
-        dlg.Destroy()
-        # if Config.FixedImageFullPath is not None and Config.WarpedImageFullPath is not None:
-        #    pyre.IrTweakInit(Config.FixedImageFullPath, Config.WarpedImageFullPath)
-
-
-    def OnOpenWarpedImage(self, e):
-        dlg = wx.FileDialog(self, "Choose a file", MyFrame.imagedirname, "", "*.*", wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            filename = str(dlg.GetFilename())
-            MyFrame.imagedirname = str(dlg.GetDirectory())
-
-            state.currentConfig.LoadWarpedImage(os.path.join(MyFrame.imagedirname, filename))
-
-        dlg.Destroy()
-
-        # if Config.FixedImageFullPath is not None and Config.WarpedImageFullPath is not None:
-        #    pyre.IrTweakInit(Config.FixedImageFullPath, Config.WarpedImageFullPath)
-
-
-    def OnOpenStos(self, e):
-        self.dirname = ''
-        dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.stos", wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            filename = str(dlg.GetFilename())
-            dirname = str(dlg.GetDirectory())
-            MyFrame.stosfilename = filename
-
-            state.currentConfig.LoadStos(os.path.join(dirname, filename))
-
-        dlg.Destroy()
-
-
-    def OnSaveWarpedImage(self, e):
-        # Set the path for the output directory.
-        if not (state.currentConfig.FixedImageViewModel is None or state.currentConfig.WarpedImageViewModel is None):
-            dlg = wx.FileDialog(self, "Choose a Directory", MyFrame.imagedirname, "", "*.png", wx.SAVE)
-            if dlg.ShowModal() == wx.ID_OK:
-                MyFrame.imagedirname = dlg.GetDirectory()
-                self.filename = dlg.GetFilename()
-                state.currentConfig.OutputImageFullPath = os.path.join(MyFrame.imagedirname, self.filename)
-
-                pool = Pools.GetGlobalThreadPool()
-                pool.add_task("Save " + state.currentConfig.OutputImageFullPath,
-                               common.SaveRegisteredWarpedImage,
-                               state.currentConfig.OutputImageFullPath,
-                               state.currentConfig.TransformViewModel.TransformModel,
-                               state.currentConfig.WarpedImageViewModel.Image)
-
-
-    def OnSaveStos(self, e):
-        if not (state.currentConfig.TransformViewModel is None):
-            self.dirname = ''
-            dlg = wx.FileDialog(self, "Choose a Directory", MyFrame.stosdirname, MyFrame.stosfilename, "*.stos", wx.SAVE)
-            if dlg.ShowModal() == wx.ID_OK:
-                MyFrame.stosdirname = dlg.GetDirectory()
-                MyFrame.stosfilename = dlg.GetFilename()
-                saveFileFullPath = os.path.join(MyFrame.stosdirname, MyFrame.stosfilename)
-
-                stosObj = StosFile.Create(state.currentConfig.FixedImageViewModel.ImageFilename,
-                                          state.currentConfig.WarpedImageViewModel.ImageFilename,
-                                          state.currentConfig.TransformViewModel.TransformModel)
-                stosObj.Save(saveFileFullPath)
-            dlg.Destroy()
-
-
+            
     def OnLeft1WindowView(self, e):
         pyre.Windows['Fixed'].setPosition(position=0, desiredDisplays=1)
         pyre.Windows['Warped'].setPosition(position=0, desiredDisplays=1)
@@ -460,8 +137,8 @@ class MyFrame(wx.Frame):
         # position = 0, 1
         ######
         if desiredDisplays == 1:
-            halfY = sizes[position][3] / 2
             halfX = sizes[position][2] / 2
+            halfY = sizes[position][3] / 2
             if self.Title == "Fixed Image" or self.Title == pyre.Windows['Fixed'].Title:
                 self.MoveXY(sizes[position][0], sizes[position][1])
                 self.SetSizeWH(halfX, halfY)
@@ -473,13 +150,13 @@ class MyFrame(wx.Frame):
                 self.SetSizeWH(sizes[position][2], halfY)
 
         elif desiredDisplays == 2 and count >= 2:
-            halfX = (sizes[position[1]][2] - sizes[position[1]][0]) / 2
-            halfY = (sizes[position[1]][3] - sizes[position[1]][1]) / 2
+            halfX = sizes[position[1]][2] / 2
+            halfY = sizes[position[1]][3] / 2
             if self.Title == "Fixed Image" or self.Title == pyre.Windows['Fixed'].Title:
                 self.MoveXY(sizes[position[1]][0], sizes[position[1]][1])
                 self.SetSizeWH(sizes[position[1]][2], halfY)
             elif self.Title == "Warped Image" or self.Title == pyre.Windows['Warped'].Title:
-                self.MoveXY(sizes[position[1]][0], halfY)
+                self.MoveXY(sizes[position[1]][0], halfY + sizes[position[1]][1])
                 self.SetSizeWH(sizes[position[1]][2], halfY)
             else:
                 self.MoveXY(sizes[position[0]][0], sizes[position[0]][1])
@@ -496,6 +173,407 @@ class MyFrame(wx.Frame):
                 self.MoveXY(sizes[position[1]][0], sizes[position[1]][1])
                 self.SetSizeWH(sizes[position[1]][2], sizes[position[1]][3])
         self.Update()
+        
+    def OnClose(self, e):
+        self.Shown = not self.Shown
+        if not pyre.AnyVisibleWindows():
+            self.OnExit()
+
+
+    def OnExit(self, e=None):
+        pyre.Exit()
+        
+
+class MosaicWindow(PyreWindowBase):
+    '''The window which we use for mosaic views'''
+    mosaicfilename = ''
+    
+    def __init__(self, parent, windowID, title):
+        
+        super(MosaicWindow, self).__init__(parent=parent, windowID=windowID, title=title) 
+        
+        self.mosaicpanel = mosaictransformpanel.MosaicTransformPanel(parent=self,
+                                                                     imageTransformViewList=None)
+        
+        self.CreateMenu()
+        
+        self.Show(True)
+        self.setPosition()
+         
+    
+    def CreateMenu(self):
+        
+        menuBar = wx.MenuBar()
+
+        filemenu = self.__CreateFileMenu()
+        menuBar.Append(filemenu, "&File")
+        
+        self.SetMenuBar(menuBar)
+
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        
+    def __CreateFileMenu(self):
+
+        filemenu = wx.Menu()
+ 
+        menuOpenMosaic = filemenu.Append(wx.ID_ANY, "&Open mosaic file")
+        self.Bind(wx.EVT_MENU, self.OnOpenMosaic, menuOpenMosaic)
+ 
+        filemenu.AppendSeparator()
+
+        menuSaveMosaic = filemenu.Append(wx.ID_ANY, "&Save mosaic file")
+        self.Bind(wx.EVT_MENU, self.OnSaveMosaic, menuSaveMosaic)
+ 
+        filemenu.AppendSeparator()
+
+        menuExit = filemenu.Append(wx.ID_EXIT, "&Exit")
+        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
+
+        return filemenu
+        
+    
+    def OnOpenMosaic(self, e):
+        self.dirname = ''
+        dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.mosaic", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            filename = str(dlg.GetFilename())
+            dirname = str(dlg.GetDirectory())
+            MosaicWindow.mosaicfilename = filename
+            
+            ImageTransformViewList = pyre.state.currentMosaicConfig.LoadMosaic(os.path.join(dirname, filename))
+            if ImageTransformViewList is None:
+                #Prompt for UI to choose tiles directory
+                tiles_dir_dlg = wx.DirDialog(self, "Choose the directory containing the tiles for the mosaic file", dirname, name="Tile directory")
+                if tiles_dir_dlg.ShowModal() == wx.ID_OK:
+                    ImageTransformViewList = pyre.state.currentMosaicConfig.LoadMosaic(os.path.join(dirname, filename), tiles_dir=tiles_dir_dlg.Path)
+                
+            self.mosaicpanel.ImageTransformViewList = ImageTransformViewList
+
+        dlg.Destroy()
+        
+    def OnSaveMosaic(self, e):
+        pass
+
+ 
+
+class StosWindow(PyreWindowBase):
+
+    stosfilename = ''
+    stosdirname = ''
+    imagedirname = ''
+     
+    def lookatfixedpoint(self, point, scale):
+        self.imagepanel.lookatfixedpoint(point, scale)
+ 
+    def __init__(self, parent, windowID, title, showFixed=False, composite=False):
+        
+        super(StosWindow, self).__init__(parent=parent, windowID=windowID, title=title)
+        
+        # self.imagepanel = wx.Panel(self, -1)
+
+        self.showFixed = showFixed
+        self.Composite = composite
+
+        self.FixedImageFullPath = None
+        self.WarpedImageFullPath = None
+
+        ###FOR DEBUGGING####
+        # DataFullPath = os.path.join(os.getcwd(), "..", "Test","Data","Images")
+        # FixedImageFullPath = os.path.join(DataFullPath, "0225_mosaic_64.png")
+        # WarpedImageFullPath = os.path.join(DataFullPath, "0226_mosaic_64.png")
+        # pyre.IrTweakInit(FixedImageFullPath, WarpedImageFullPath)
+        ####################
+
+        self.imagepanel = imagetransformpanel.ImageTransformViewPanel(parent=self,
+                                              TransformController=None, 
+                                              ImageGridTransformView=None,
+                                              FixedSpace=self.showFixed,
+                                              composite=self.Composite)
+
+        # pyre.Config.TransformController,
+        # pyre.Config.FixedTransformView
+
+        # self.control = wx.StaticText(panel, -1, README_Import(self), size=(800,-1))
+
+        # Populate menu options into a File Dropdown menu.
+        
+        self.CreateMenu()
+        
+    def CreateMenu(self):
+        
+        menuBar = wx.MenuBar()
+
+        filemenu = self.__CreateFileMenu()
+        menuBar.Append(filemenu, "&File")
+
+        opsmenu = self.__CreateOpsMenu()
+        menuBar.Append(opsmenu, "&Operations")
+
+        self.windmenu = self.__CreateWindowsMenu()
+        menuBar.Append(self.windmenu, "&Windows")
+
+        self.SetMenuBar(menuBar)
+
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+        # Allows Drag and Drop
+        dt = FileDrop(self)
+        self.SetDropTarget(dt)
+
+        # self.imagepanel.SetDropTarget(FileDrop(self.imagepanel))
+
+        # self.SetDropTarget(TextDrop(self))
+        # self.DragAcceptFiles(True)
+
+        # print "Drop target set"
+
+        # print str(self.GetDropTarget())
+
+        self.Show(True)
+        self.setPosition()
+
+        # Make sure we have a GL context before initializing view window
+        wx.CallAfter(self.UpdateRawImageWindow)
+
+
+    def __CreateWindowsMenu(self):
+        menu = wx.Menu()
+        windowSubMenu = wx.Menu()
+
+        displayCount = wx.Display_GetCount()
+
+        if displayCount == 1:
+            pass
+        elif displayCount == 2:
+            submenuWindow1 = windowSubMenu.Append(wx.ID_ANY, "Left 1 Window View")
+            submenuWindow2 = windowSubMenu.Append(wx.ID_ANY, "Right 1 Window View")
+            windowSubMenu.AppendSeparator()
+            submenuWindow3 = windowSubMenu.Append(wx.ID_ANY, "2 Window View")
+
+            self.Bind(wx.EVT_MENU, self.OnLeft1WindowView, submenuWindow1)
+            self.Bind(wx.EVT_MENU, self.OnRight1WindowView, submenuWindow2)
+            self.Bind(wx.EVT_MENU, self.On2WindowView, submenuWindow3)
+
+            menu.AppendMenu(wx.ID_ANY, "&Window Options", windowSubMenu)
+
+        elif displayCount >= 3:
+            submenuWindow1 = windowSubMenu.Append(wx.ID_ANY, "Left 1 Window View")
+            submenuWindow2 = windowSubMenu.Append(wx.ID_ANY, "Center 1 Window View")
+            submenuWindow3 = windowSubMenu.Append(wx.ID_ANY, "Right 1 Window View")
+            windowSubMenu.AppendSeparator()
+            submenuWindow4 = windowSubMenu.Append(wx.ID_ANY, "Left 2 Window View")
+            submenuWindow5 = windowSubMenu.Append(wx.ID_ANY, "Right 2 Window View")
+            windowSubMenu.AppendSeparator()
+            submenuWindow6 = windowSubMenu.Append(wx.ID_ANY, "3 Window View")
+
+            self.Bind(wx.EVT_MENU, self.OnLeft1WindowView, submenuWindow1)
+            self.Bind(wx.EVT_MENU, self.OnCenter1WindowView, submenuWindow2)
+            self.Bind(wx.EVT_MENU, self.OnRight1WindowView, submenuWindow3)
+            self.Bind(wx.EVT_MENU, self.On2WindowView, submenuWindow4)
+            self.Bind(wx.EVT_MENU, self.OnRight2WindowView, submenuWindow5)
+            self.Bind(wx.EVT_MENU, self.On3WindowView, submenuWindow6)
+
+            menu.AppendMenu(wx.ID_ANY, "&Multiple display options", windowSubMenu)
+
+        self.menuShowFixedImage = menu.Append(wx.ID_ANY, "&Fixed Image", kind=wx.ITEM_CHECK)
+        menu.Check(self.menuShowFixedImage.GetId(), True)
+        self.Bind(wx.EVT_MENU, self.OnShowFixedWindow, self.menuShowFixedImage)
+
+        self.menuShowWarpedImage = menu.Append(wx.ID_ANY, "&Warped Image", kind=wx.ITEM_CHECK)
+        menu.Check(self.menuShowWarpedImage.GetId(), True)
+        self.Bind(wx.EVT_MENU, self.OnShowWarpedWindow, self.menuShowWarpedImage)
+
+        self.menuShowCompositeImage = menu.Append(wx.ID_ANY, "&Composite Image", kind=wx.ITEM_CHECK)
+        menu.Check(self.menuShowCompositeImage.GetId(), True)
+        self.Bind(wx.EVT_MENU, self.OnShowCompositeWindow, self.menuShowCompositeImage)
+
+        menu.AppendSeparator()
+
+        menuRestoreOrientation = menu.Append(wx.ID_ANY, "&Restore Orientation")
+        self.Bind(wx.EVT_MENU, self.OnRestoreOrientation, menuRestoreOrientation)
+
+        return menu
+
+
+    def __CreateOpsMenu(self):
+        menu = wx.Menu()
+
+        menuRotationTranslation = menu.Append(wx.ID_ANY, "&Rotate translate estimate")
+        self.Bind(wx.EVT_MENU, self.OnRotateTranslate, menuRotationTranslation)
+
+        menu.AppendSeparator()
+
+        menuInstructions = menu.Append(wx.ID_ABOUT, "&Keyboard Instructions")
+        self.Bind(wx.EVT_MENU, self.OnInstructions, menuInstructions)
+
+        menuClear = menu.Append(wx.ID_ANY, "&Clear All Points")
+        self.Bind(wx.EVT_MENU, self.OnClearAllPoints, menuClear)
+
+        return menu
+
+
+    def __CreateFileMenu(self):
+
+        filemenu = wx.Menu()
+
+        # Menu options
+        menuOpenStos = filemenu.Append(wx.ID_ANY, "&Open stos file")
+        self.Bind(wx.EVT_MENU, self.OnOpenStos, menuOpenStos)
+          
+        menuOpenFixedImage = filemenu.Append(wx.ID_ANY, "&Open Fixed Image")
+        self.Bind(wx.EVT_MENU, self.OnOpenFixedImage, menuOpenFixedImage)
+
+        menuOpenWarpedImage = filemenu.Append(wx.ID_ANY, "&Open Warped Image")
+        self.Bind(wx.EVT_MENU, self.OnOpenWarpedImage, menuOpenWarpedImage)
+
+        filemenu.AppendSeparator()
+
+        menuSaveStos = filemenu.Append(wx.ID_ANY, "&Save Stos File")
+        self.Bind(wx.EVT_MENU, self.OnSaveStos, menuSaveStos)
+
+        menuSaveWarpedImage = filemenu.Append(wx.ID_ANY, "&Save Warped Image")
+        self.Bind(wx.EVT_MENU, self.OnSaveWarpedImage, menuSaveWarpedImage)
+
+        filemenu.AppendSeparator()
+
+        menuExit = filemenu.Append(wx.ID_EXIT, "&Exit")
+        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
+
+        return filemenu
+
+
+    def UpdateRawImageWindow(self):
+
+        # if hasattr(self, 'imagepanel'):
+        #    del self.imagepanel
+
+        imageTransformView = None
+        if self.Composite:
+            imageTransformView = CompositeTransformView(pyre.state.currentStosConfig.FixedImageViewModel,
+                                                    pyre.state.currentStosConfig.WarpedImageViewModel,
+                                                    pyre.state.currentStosConfig.Transform)
+        else:
+            imageViewModel = pyre.state.currentStosConfig.FixedImageViewModel
+            if not self.showFixed:
+                imageViewModel = pyre.state.currentStosConfig.WarpedImageViewModel
+
+            imageTransformView = ImageGridTransformView(imageViewModel,
+                                                    pyre.state.currentStosConfig.Transform)
+ 
+        self.imagepanel.ImageGridTransformView = imageTransformView
+
+
+    
+
+
+    def OnShowFixedWindow(self, e):
+        pyre.ToggleWindow('Fixed')
+
+
+    def OnShowWarpedWindow(self, e):
+        pyre.ToggleWindow('Warped')
+
+
+    def OnShowCompositeWindow(self, e):
+        pyre.ToggleWindow('Composite')
+
+
+    def OnRestoreOrientation(self, e):
+        pyre.Windows['Composite'].setPosition()
+        pyre.Windows['Warped'].setPosition()
+        pyre.Windows['Fixed'].setPosition()
+
+
+    def OnInstructions(self, e):
+
+        readme = resources.README()
+        dlg = wx.MessageDialog(self, readme, "Keyboard Instructions", wx.OK)
+        dlg.ShowModal()
+        dlg.Destroy()
+        
+
+    def OnClearAllPoints(self, e):
+        pyre.state.currentStosConfig.TransformController.SetPoints( pyre.viewmodels.transformcontroller.CreateDefaultTransform(pyre.state.currentStosConfig.FixedImageViewModel.RawImageSize,
+                                                                                           pyre.state.currentStosConfig.WarpedImageViewModel.RawImageSize).points)
+
+
+    def OnRotateTranslate(self, e):
+        common.RotateTranslateWarpedImage()
+
+
+    def OnOpenFixedImage(self, e):
+        dlg = wx.FileDialog(self, "Choose a file", StosWindow.imagedirname, "", "*.*", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            filename = str(dlg.GetFilename())
+            StosWindow.imagedirname = str(dlg.GetDirectory())
+
+            pyre.state.currentStosConfig.LoadFixedImage(os.path.join(StosWindow.imagedirname, filename))
+
+        dlg.Destroy()
+        # if Config.FixedImageFullPath is not None and Config.WarpedImageFullPath is not None:
+        #    pyre.IrTweakInit(Config.FixedImageFullPath, Config.WarpedImageFullPath)
+
+
+    def OnOpenWarpedImage(self, e):
+        dlg = wx.FileDialog(self, "Choose a file", StosWindow.imagedirname, "", "*.*", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            filename = str(dlg.GetFilename())
+            StosWindow.imagedirname = str(dlg.GetDirectory())
+
+            pyre.state.currentStosConfig.LoadWarpedImage(os.path.join(StosWindow.imagedirname, filename))
+
+        dlg.Destroy()
+
+        # if Config.FixedImageFullPath is not None and Config.WarpedImageFullPath is not None:
+        #    pyre.IrTweakInit(Config.FixedImageFullPath, Config.WarpedImageFullPath)
+
+    def OnOpenStos(self, e):
+        self.dirname = ''
+        dlg = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.stos", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            filename = str(dlg.GetFilename())
+            dirname = str(dlg.GetDirectory())
+            StosWindow.stosfilename = filename
+
+            pyre.state.currentStosConfig.LoadStos(os.path.join(dirname, filename))
+
+        dlg.Destroy()
+
+
+    def OnSaveWarpedImage(self, e):
+        # Set the path for the output directory.
+        if not (pyre.state.currentStosConfig.FixedImageViewModel is None or pyre.state.currentStosConfig.WarpedImageViewModel is None):
+            dlg = wx.FileDialog(self, "Choose a Directory", StosWindow.imagedirname, "", "*.png", wx.SAVE)
+            if dlg.ShowModal() == wx.ID_OK:
+                StosWindow.imagedirname = dlg.GetDirectory()
+                self.filename = dlg.GetFilename()
+                pyre.state.currentStosConfig.OutputImageFullPath = os.path.join(StosWindow.imagedirname, self.filename)
+
+#                 common.SaveRegisteredWarpedImage(pyre.state.currentStosConfig.OutputImageFullPath,
+#                                                  pyre.state.currentStosConfig.Transform,
+#                                                  pyre.state.currentStosConfig.WarpedImageViewModel.Image)
+                pool = pools.GetGlobalThreadPool()
+                pool.add_task("Save " + pyre.state.currentStosConfig.OutputImageFullPath,
+                                common.SaveRegisteredWarpedImage,
+                                pyre.state.currentStosConfig.OutputImageFullPath,
+                                pyre.state.currentStosConfig.Transform,
+                                pyre.state.currentStosConfig.WarpedImageViewModel.Image)
+
+
+    def OnSaveStos(self, e):
+        if not (pyre.state.currentStosConfig.TransformController is None):
+            self.dirname = ''
+            dlg = wx.FileDialog(self, "Choose a Directory", StosWindow.stosdirname, StosWindow.stosfilename, "*.stos", wx.SAVE)
+            if dlg.ShowModal() == wx.ID_OK:
+                StosWindow.stosdirname = dlg.GetDirectory()
+                StosWindow.stosfilename = dlg.GetFilename()
+                saveFileFullPath = os.path.join(StosWindow.stosdirname, StosWindow.stosfilename)
+
+                stosObj = StosFile.Create(pyre.state.currentStosConfig.FixedImageViewModel.ImageFilename,
+                                          pyre.state.currentStosConfig.WarpedImageViewModel.ImageFilename,
+                                          pyre.state.currentStosConfig.Transform)
+                stosObj.Save(saveFileFullPath)
+            dlg.Destroy()
 
 
 class TextDrop (wx.TextDropTarget):
@@ -529,14 +607,18 @@ class FileDrop (wx.FileDropTarget):
                 root, extension = os.path.splitext(name)
 
                 if extension == ".stos":
-                    MyFrame.stosdirname = dirname
-                    MyFrame.stosfilename = filename
-                    state.currentConfig.LoadStos(fullpath)
+                    StosWindow.stosdirname = dirname
+                    StosWindow.stosfilename = filename
+                    pyre.state.currentStosConfig.LoadStos(fullpath) 
+                elif extension == ".mosaic":
+                    StosWindow.stosdirname = dirname
+                    StosWindow.stosfilename = filename
+                    pyre.state.currentStosConfig.LoadMosaic(fullpath)
                 else:
                     if self.window.ID == "Fixed":
-                        state.currentConfig.LoadFixedImage(fullpath)
+                        pyre.state.currentStosConfig.LoadFixedImage(fullpath)
                     elif self.window.ID == "Warped":
-                        state.currentConfig.LoadWarpedImage(fullpath)
+                        pyre.state.currentStosConfig.LoadWarpedImage(fullpath)
                     else:
                         pass
 
