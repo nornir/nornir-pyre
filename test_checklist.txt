@@ -1,0 +1,7 @@
+Test Checklist
+
+Show full image after the program starts up
+Clear points
+Rotate points with CTRL+drag
+Click selects a point
+

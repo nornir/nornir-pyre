@@ -6,7 +6,7 @@ Created on Oct 26, 2012
 
 
 
-import Camera
+import pyre.ui.camera
 import numpy
 import PIL
 from  pyglet import *
@@ -38,7 +38,7 @@ class TileExportWindow(window.Window):
         self.width = Tilesize[0];
         self.height = Tilesize[1];
 
-        self.camera = Camera.Camera(position=LookAt, scale=Scale);
+        self.camera = pyre.ui.camera.Camera(position=LookAt, scale=Scale);
 
         boundingBox = self.VisibleImageBoundingBox();
 

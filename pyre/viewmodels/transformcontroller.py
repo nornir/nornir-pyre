@@ -16,15 +16,14 @@ import scipy.ndimage
 import common
 import time
 import copy
-import nornir_pools as Pools
+import nornir_pools as pools
 from nornir_imageregistration.alignment_record import AlignmentRecord
 
 
-def _DefaultTransform(FixedShape=None, WarpedShape=None):
+def CreateDefaultTransform(FixedShape=None, WarpedShape=None):
     # FixedSize = Utils.Images.GetImageS ize(FixedImageFullPath)
     # WarpedSize = Utils.Images.GetImageSize(WarpedImageFullPath)
-
-
+ 
     if FixedShape is None:
         FixedShape = (512, 512)
 
@@ -35,31 +34,30 @@ def _DefaultTransform(FixedShape=None, WarpedShape=None):
     return alignRecord.ToTransform(FixedShape,
                                         WarpedShape)
 
+debugid = 0
 
-class  TransformViewModel(object):
+class  TransformController(object):
     '''
-    Combines and image and a transform to render an image
+    Combines an image and a transform to render an image
     '''
 
     @classmethod
     def CreateDefault(cls, FixedShape=None, WarpedShape=None):
-        T = _DefaultTransform(FixedShape, WarpedShape)
-        return TransformViewModel(T)
+        T = CreateDefaultTransform(FixedShape, WarpedShape)
+        return TransformController(T)
 
     @property
     def width(self):
-        return self.TransformModel.width;
-
-
+        return self.TransformModel.FixedBoundingBox.Width
+ 
     @property
     def height(self):
-        return self.TransformModel.height;
+        return self.TransformModel.FixedBoundingBox.Height
 
     @property
     def NumPoints(self):
         return self.TransformModel.points.shape[0]
-
-
+ 
     @property
     def points(self):
         return copy.deepcopy(self.TransformModel.points)
@@ -127,7 +125,7 @@ class  TransformViewModel(object):
         '''Calls every function registered to be notified when the transform changes.'''
 
         # Calls every listener when the transform has changed in a way that a point may be mapped to a new position in the fixed space
-#        Pool = Pools.GetGlobalThreadPool()
+#        Pool = pools.GetGlobalThreadPool()
         # tlist = list()
         for func in self.__OnChangeEventListeners:
             func()
@@ -141,7 +139,11 @@ class  TransformViewModel(object):
         '''
         Constructor
         '''
-
+        
+        global debugid
+        self._id = debugid
+        debugid += 1
+        
         self.__OnChangeEventListeners = []
         self._TransformModel = None
 
@@ -154,6 +156,8 @@ class  TransformViewModel(object):
 
         self.Debug = False;
         self.ShowWarped = False;
+        
+        #print("Create transform controller %d" % self._id)
 
 
     def SetPoints(self, points):
@@ -185,7 +189,7 @@ class  TransformViewModel(object):
 
 
     def NearestPoint(self, ImagePoint, FixedSpace=True):
-        if(not FixedSpace and not self.ShowWarped):
+        if(not FixedSpace):
             Distance, index = self.TransformModel.NearestWarpedPoint(ImagePoint);
         else:
             Distance, index = self.TransformModel.NearestFixedPoint(ImagePoint);
@@ -259,6 +263,9 @@ class  TransformViewModel(object):
 
     def GetNearestPoint(self, index, FixedSpace=False):
         NearestPoint = None
+        if index > len(self.TransformModel.WarpedPoints):
+            return None
+        
         if(not FixedSpace  and not self.ShowWarped):
             NearestPoint = copy.copy(self.TransformModel.WarpedPoints[index])
         else:
@@ -289,8 +296,9 @@ class  TransformViewModel(object):
 
         NearestPoint = self.GetNearestPoint(index, FixedSpace)
 
-        NearestPoint[0] = NearestPoint[0] + ImageDY;
-        NearestPoint[1] = NearestPoint[1] + ImageDX;
+        NearestPoint += numpy.array((ImageDY, ImageDX))
+        #NearestPoint[0] = NearestPoint[0] + ImageDY;
+        #NearestPoint[1] = NearestPoint[1] + ImageDX;
 
         if(not FixedSpace):
             if not self.ShowWarped:
@@ -299,12 +307,9 @@ class  TransformViewModel(object):
                 OldWarpedPoint = self.TransformModel.InverseTransform([[NearestPoint[0] - ImageDY, NearestPoint[1] - ImageDX]])[0];
                 NewWarpedPoint = self.TransformModel.InverseTransform([NearestPoint])[0];
 
-                ModifiedDX = NewWarpedPoint[1] - OldWarpedPoint[1];
-                ModifiedDY = NewWarpedPoint[0] - OldWarpedPoint[0];
+                TranslatedPoint = NewWarpedPoint - OldWarpedPoint 
 
-                FinalPoint = self.TransformModel.WarpedPoints[index];
-                FinalPoint[0] = FinalPoint[0] + ModifiedDY;
-                FinalPoint[1] = FinalPoint[1] + ModifiedDX;
+                FinalPoint = self.TransformModel.WarpedPoints[index] + TranslatedPoint 
                 index = self.TransformModel.UpdateWarpedPoint(index, FinalPoint);
         else:
             index = self.TransformModel.UpdateFixedPoint(index, NearestPoint);
@@ -316,10 +321,10 @@ class  TransformViewModel(object):
 
     def AutoAlignPoints(self, i_points):
         '''Attemps to align the specified point indicies'''
-        from state import currentConfig
+        from pyre.state import currentStosConfig
 
-        if(currentConfig.FixedImageViewModel is None or
-           currentConfig.WarpedImageViewModel is None):
+        if(currentStosConfig.FixedImageViewModel is None or
+           currentStosConfig.WarpedImageViewModel is None):
             return
 
         if not isinstance(i_points, list):
@@ -329,25 +334,23 @@ class  TransformViewModel(object):
 
         indextotask = {}
         if len(i_points) > 1:
-            pool = Pools.GetGlobalThreadPool()
+            pool = pools.GetGlobalLocalMachinePool()
             
             for i_point in i_points:
                 fixed = self.GetFixedPoint(i_point)
                 warped = self.GetWarpedPoint(i_point)
                 
-                
-    
                 task = pool.add_task(i_point, common.AttemptAlignPoint,
                                                 self,
-                                                currentConfig.FixedImageViewModel.Image,
-                                                currentConfig.WarpedImageViewModel.Image,
+                                                currentStosConfig.FixedImageViewModel.Image,
+                                                currentStosConfig.WarpedImageViewModel.Image,
                                                 fixed,
-                                                warped)
-                indextotask[i_point] = task
+                                                warped,
+                                                alignmentArea=currentStosConfig.AlignmentTileSize,
+                                                anglesToSearch=currentStosConfig.AnglesToSearch)
+                indextotask[i_point] = task       
     
-            
-    
-            for i_point in indextotask:
+            for i_point in sorted(indextotask.keys()):
                 task = indextotask[i_point]
                 record = task.wait_return()
     
@@ -361,15 +364,18 @@ class  TransformViewModel(object):
                     continue
     
                 offsets[i_point, :] = np.array([dy, dx])
+                del indextotask[i_point]
         else:
             i_point = i_points[0]
             fixed = self.GetFixedPoint(i_point)
             warped = self.GetWarpedPoint(i_point)
             record = common.AttemptAlignPoint(self,
-                                     currentConfig.FixedImageViewModel.Image,
-                                     currentConfig.WarpedImageViewModel.Image,
-                                     fixed,
-                                     warped)
+                                    currentStosConfig.FixedImageViewModel.Image,
+                                    currentStosConfig.WarpedImageViewModel.Image,
+                                    fixed,
+                                    warped,
+                                    alignmentArea=currentStosConfig.AlignmentTileSize,
+                                    anglesToSearch=currentStosConfig.AnglesToSearch)
             
             if record is None:
                 print "point #" + str(i_point) + " returned None for alignment"
@@ -387,4 +393,4 @@ class  TransformViewModel(object):
         self.TranslateFixed(offsets)
 
 
-        # return self.TransformViewModel.MovePoint(i_point, dx, dy, FixedSpace = self.FixedSpace)
+        # return self.TransformController.MovePoint(i_point, dx, dy, FixedSpace = self.FixedSpace)

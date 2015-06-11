@@ -48,13 +48,16 @@ def README():
 
 def TextureForNumpyImage(image):
     '''Create a GL texture for the scipy.ndimage array'''
-
-    image = image / 255.0
-    image = numpy.float32(image)
+    
+    image = numpy.float32(image) / 255.0
     textureid = glGenTextures(1)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
     glBindTexture(GL_TEXTURE_2D, textureid)
-    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_LUMINANCE, image.shape[1], image.shape[0],
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_LUMINANCE8, image.shape[1], image.shape[0],
                                GL_LUMINANCE, GL_FLOAT, image)
 
     return textureid
