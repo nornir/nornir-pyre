@@ -93,7 +93,7 @@ def RotateTranslateWarpedImage(LimitImageSize=False):
                                              currentStosConfig.WarpedImageViewModel.RawImageSize)
         currentStosConfig.TransformController.SetPoints(transform.points)
 
-        history.SaveState(currentStosConfig.TransformController.SetPoints, currentStosConfig.TransformController.Transform.points)
+        history.SaveState(currentStosConfig.TransformController.SetPoints, currentStosConfig.TransformController.points)
 
 
 def AttemptAlignPoint(transform, fixedImage, warpedImage, controlpoint, warpedpoint, alignmentArea, anglesToSearch):
