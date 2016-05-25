@@ -46,6 +46,8 @@ def Run():
 def LoadDataFromArgs(arg_values):
     
     if 'stosFullPath' in arg_values:
+        if(arg_values.stosFullPath is None):
+            return
         pyre.state.currentStosConfig.LoadStos(arg_values.stosFullPath)
     else:
         if 'WarpedImageFullPath' in arg_values:
