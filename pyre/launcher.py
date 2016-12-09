@@ -16,7 +16,7 @@ app = None
 def Run():
     if not hasattr(sys, 'frozen'):
         import wxversion
-        wxversion.select('2.8')
+        wxversion.select('3.0')
 
     import wx
 
