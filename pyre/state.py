@@ -331,9 +331,12 @@ class StosState(StateEvents):
             self.FixedImageViewModel = ivm
         else:
             self.WarpedImageViewModel = ivm
-        
-        
+
+
     def LoadStos(self, stosFullPath):
+
+        if stosFullPath is None:
+            return False
 
         dirname = os.path.dirname(stosFullPath)
         filename = os.path.basename(stosFullPath)
@@ -349,6 +352,7 @@ class StosState(StateEvents):
                 self.LoadFixedImage(nextPath)
             else:
                 print("Could not find fixed image: " + obj.ControlImageFullPath)
+                return False
 
         if os.path.exists(obj.MappedImageFullPath):
             self.LoadWarpedImage(obj.MappedImageFullPath)
@@ -358,10 +362,13 @@ class StosState(StateEvents):
                 self.LoadWarpedImage(nextPath)
             else:
                 print("Could not find fixed image: " + obj.MappedImageFullPath)
-                
+                return False
+
+        return True
+
     def WindowsLookAtFixedPoint(self, fixed_point, scale):
         '''Force all open windows to look at this point'''
-         
+    
         self.FixedWindow.lookatfixedpoint(fixed_point, scale)
         self.WarpedWindow.lookatfixedpoint(fixed_point, scale)
         self.CompositeWindow.lookatfixedpoint(fixed_point, scale)

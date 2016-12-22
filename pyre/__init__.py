@@ -24,9 +24,9 @@ Left Button
 
 Right Button
 
-   ``Shift + <Right Click> to delete point under the cursor
+   ``Shift + <Right Click>`` to delete point under the cursor
    
-   ``<Right Click> + drag to move the view
+   ``<Right Click> + drag`` to move the view
 
 Scroll wheel
 

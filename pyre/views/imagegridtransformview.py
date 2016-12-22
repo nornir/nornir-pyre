@@ -446,8 +446,8 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         '''
          
         (y, x) = tile_bounding_rect.BottomLeft
-        h = tile_bounding_rect.Height
-        w = tile_bounding_rect.Width
+        h = int(tile_bounding_rect.Height)
+        w = int(tile_bounding_rect.Width)
      
         WarpedCorners = [[y, x],
                         [ y, x + w, ],
@@ -472,8 +472,8 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         '''
          
         (y, x) = tile_bounding_rect.BottomLeft
-        h = tile_bounding_rect.Height
-        w = tile_bounding_rect.Width
+        h = int(tile_bounding_rect.Height)
+        w = int(tile_bounding_rect.Width)
      
         WarpedCorners = [[y, x],
                         [ y, x + w, ],

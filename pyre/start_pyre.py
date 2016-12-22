@@ -8,7 +8,7 @@ if __name__ == '__main__':
     print("Starting Pyre")
     import pyre
     import os
-    
+
     profiler = None
 
     if 'PROFILE' in os.environ:
@@ -18,8 +18,8 @@ if __name__ == '__main__':
             print("Starting profiler because PROFILE environment variable is defined") 
             profiler = cProfile.Profile()
             profiler.enable()
-        
+
     pyre.Run()
-    
+
     if not profiler is None:
         profiler.dump_stats("C:\Temp\pyre.profile")
