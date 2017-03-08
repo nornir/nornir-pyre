@@ -5,6 +5,7 @@ Created on Feb 6, 2015
 '''
 from pyre.views import imagegridtransformview
 
+
 class MosaicView(imagegridtransformview.ImageGridTransformView):
     '''
     classdocs

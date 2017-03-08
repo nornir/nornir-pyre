@@ -4,11 +4,11 @@ Created on Aug 30, 2013
 @author: James Anderson
 '''
 
+import sys
+
 from ez_setup import use_setuptools
 from setuptools import setup, find_packages
 
-
-import sys
 
 if __name__ == '__main__':
     use_setuptools()
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
 
     includes = []
-    packages = ['pyre']
+    packages = find_packages()
 
     # GUI applications require a different base on Windows (the default is for a
     # console application).
