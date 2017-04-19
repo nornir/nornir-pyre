@@ -13,6 +13,9 @@ if not hasattr(sys, 'frozen'):
 from pyre import state
 import launcher
 
-if __name__ == '__main__':
+def main():
     state.init()
     launcher.Run()
+
+if __name__ == '__main__':
+    main()

@@ -48,12 +48,11 @@ if __name__ == '__main__':
     if sys.platform == "win32":
         base = "Win32GUI"
 
-    entry_points = {'gui_scripts' : ['pyre_win = pyre.common:Run']}
+    entry_points = {'gui_scripts' : ['pyre = pyre.__main__:main']}
 
     # setup(data_files=data_files, console=['Pyre.py'])
     setup(name="pyre",
           version="1.3.2",
-          scripts=['scripts/start_pyre.py'],
           entry_points=entry_points,
           data_files=data_files,
           description='Python Image Registration Tool',
