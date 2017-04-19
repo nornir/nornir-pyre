@@ -1,30 +1,16 @@
-import sys
-if not hasattr(sys, 'frozen'):
-    import wxversion
-    wxversion.select('3.0')
-import wx
-
 import os
-from nornir_imageregistration.files.stosfile import StosFile
-import nornir_imageregistration.transforms.factory
-from pyre.ui import glpanel
-from pyre.ui import imagetransformpanel
-from pyre.ui import mosaictransformpanel
-import pyre
-import common
-import nornir_pools as pools
-import pyre.viewmodels.transformcontroller 
-from pyre.views.imagegridtransformview import ImageGridTransformView
-from pyre.views.compositetransformview import CompositeTransformView 
-import resources
+import sys
 
-import pyre.state
+from nornir_imageregistration.files.stosfile import StosFile 
+import pyre.ui
+from pyre import state
+
+import wx
+import nornir_pools as pools
 
 class PyreWindowBase(wx.Frame):
     '''The window which we use for mosaic views'''
-    
-    
-        
+     
     @property
     def ID(self):
         return self._ID
@@ -32,7 +18,7 @@ class PyreWindowBase(wx.Frame):
     def __init__(self, parent, windowID, title):
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
         
-        print "Parent:" + str(self.Parent)
+        print("Parent:" + str(self.Parent))
 
         self._ID = windowID
     
@@ -192,7 +178,7 @@ class MosaicWindow(PyreWindowBase):
         
         super(MosaicWindow, self).__init__(parent=parent, windowID=windowID, title=title) 
         
-        self.mosaicpanel = mosaictransformpanel.MosaicTransformPanel(parent=self,
+        self.mosaicpanel = pyre.ui.MosaicTransformPanel(parent=self,
                                                                      imageTransformViewList=None)
         
         self.CreateMenu()
@@ -240,12 +226,12 @@ class MosaicWindow(PyreWindowBase):
             dirname = str(dlg.GetDirectory())
             MosaicWindow.mosaicfilename = filename
             
-            ImageTransformViewList = pyre.state.currentMosaicConfig.LoadMosaic(os.path.join(dirname, filename))
+            ImageTransformViewList = state.currentMosaicConfig.LoadMosaic(os.path.join(dirname, filename))
             if ImageTransformViewList is None:
                 #Prompt for UI to choose tiles directory
                 tiles_dir_dlg = wx.DirDialog(self, "Choose the directory containing the tiles for the mosaic file", dirname, name="Tile directory")
                 if tiles_dir_dlg.ShowModal() == wx.ID_OK:
-                    ImageTransformViewList = pyre.state.currentMosaicConfig.LoadMosaic(os.path.join(dirname, filename), tiles_dir=tiles_dir_dlg.Path)
+                    ImageTransformViewList = state.currentMosaicConfig.LoadMosaic(os.path.join(dirname, filename), tiles_dir=tiles_dir_dlg.Path)
                 
             self.mosaicpanel.ImageTransformViewList = ImageTransformViewList
 
@@ -284,7 +270,7 @@ class StosWindow(PyreWindowBase):
         # pyre.IrTweakInit(FixedImageFullPath, WarpedImageFullPath)
         ####################
 
-        self.imagepanel = imagetransformpanel.ImageTransformViewPanel(parent=self,
+        self.imagepanel = pyre.ui.ImageTransformViewPanel(parent=self,
                                               TransformController=None, 
                                               ImageGridTransformView=None,
                                               FixedSpace=self.showFixed,
@@ -449,16 +435,16 @@ class StosWindow(PyreWindowBase):
 
         imageTransformView = None
         if self.Composite:
-            imageTransformView = CompositeTransformView(pyre.state.currentStosConfig.FixedImageViewModel,
-                                                    pyre.state.currentStosConfig.WarpedImageViewModel,
-                                                    pyre.state.currentStosConfig.Transform)
+            imageTransformView = pyre.views.CompositeTransformView(state.currentStosConfig.FixedImageViewModel,
+                                                    state.currentStosConfig.WarpedImageViewModel,
+                                                    state.currentStosConfig.Transform)
         else:
-            imageViewModel = pyre.state.currentStosConfig.FixedImageViewModel
+            imageViewModel = state.currentStosConfig.FixedImageViewModel
             if not self.showFixed:
-                imageViewModel = pyre.state.currentStosConfig.WarpedImageViewModel
+                imageViewModel = state.currentStosConfig.WarpedImageViewModel
 
-            imageTransformView = ImageGridTransformView(imageViewModel,
-                                                    pyre.state.currentStosConfig.Transform)
+            imageTransformView = pyre.views.ImageGridTransformView(imageViewModel,
+                                                    state.currentStosConfig.Transform)
  
         self.imagepanel.ImageGridTransformView = imageTransformView
 
@@ -493,12 +479,12 @@ class StosWindow(PyreWindowBase):
         
 
     def OnClearAllPoints(self, e):
-        pyre.state.currentStosConfig.TransformController.SetPoints( pyre.viewmodels.transformcontroller.CreateDefaultTransform(pyre.state.currentStosConfig.FixedImageViewModel.RawImageSize,
-                                                                                           pyre.state.currentStosConfig.WarpedImageViewModel.RawImageSize).points)
+        state.currentStosConfig.TransformController.SetPoints( pyre.viewmodels.transformcontroller.CreateDefaultTransform(state.currentStosConfig.FixedImageViewModel.RawImageSize,
+                                                                                           state.currentStosConfig.WarpedImageViewModel.RawImageSize).points)
 
 
     def OnRotateTranslate(self, e):
-        common.RotateTranslateWarpedImage()
+        pyre.common.RotateTranslateWarpedImage()
 
 
     def OnOpenFixedImage(self, e):
@@ -507,7 +493,7 @@ class StosWindow(PyreWindowBase):
             filename = str(dlg.GetFilename())
             StosWindow.imagedirname = str(dlg.GetDirectory())
 
-            pyre.state.currentStosConfig.LoadFixedImage(os.path.join(StosWindow.imagedirname, filename))
+            state.currentStosConfig.LoadFixedImage(os.path.join(StosWindow.imagedirname, filename))
 
         dlg.Destroy()
         # if Config.FixedImageFullPath is not None and Config.WarpedImageFullPath is not None:
@@ -520,7 +506,7 @@ class StosWindow(PyreWindowBase):
             filename = str(dlg.GetFilename())
             StosWindow.imagedirname = str(dlg.GetDirectory())
 
-            pyre.state.currentStosConfig.LoadWarpedImage(os.path.join(StosWindow.imagedirname, filename))
+            state.currentStosConfig.LoadWarpedImage(os.path.join(StosWindow.imagedirname, filename))
 
         dlg.Destroy()
 
@@ -535,7 +521,7 @@ class StosWindow(PyreWindowBase):
             dirname = str(dlg.GetDirectory())
             StosWindow.stosfilename = filename
 
-            pyre.state.currentStosConfig.LoadStos(os.path.join(dirname, filename))
+            state.currentStosConfig.LoadStos(os.path.join(dirname, filename))
 
         dlg.Destroy()
 
@@ -547,7 +533,7 @@ class StosWindow(PyreWindowBase):
             if dlg.ShowModal() == wx.ID_OK:
                 StosWindow.imagedirname = dlg.GetDirectory()
                 self.filename = dlg.GetFilename()
-                pyre.state.currentStosConfig.OutputImageFullPath = os.path.join(StosWindow.imagedirname, self.filename)
+                state.currentStosConfig.OutputImageFullPath = os.path.join(StosWindow.imagedirname, self.filename)
 
 #                 common.SaveRegisteredWarpedImage(pyre.state.currentStosConfig.OutputImageFullPath,
 #                                                  pyre.state.currentStosConfig.Transform,
@@ -555,13 +541,13 @@ class StosWindow(PyreWindowBase):
                 pool = pools.GetGlobalThreadPool()
                 pool.add_task("Save " + pyre.state.currentStosConfig.OutputImageFullPath,
                                 common.SaveRegisteredWarpedImage,
-                                pyre.state.currentStosConfig.OutputImageFullPath,
-                                pyre.state.currentStosConfig.Transform,
-                                pyre.state.currentStosConfig.WarpedImageViewModel.Image)
+                                state.currentStosConfig.OutputImageFullPath,
+                                state.currentStosConfig.Transform,
+                                state.currentStosConfig.WarpedImageViewModel.Image)
 
 
     def OnSaveStos(self, e):
-        if not (pyre.state.currentStosConfig.TransformController is None):
+        if not (state.currentStosConfig.TransformController is None):
             self.dirname = ''
             dlg = wx.FileDialog(self, "Choose a Directory", StosWindow.stosdirname, StosWindow.stosfilename, "*.stos", wx.SAVE)
             if dlg.ShowModal() == wx.ID_OK:
@@ -569,9 +555,9 @@ class StosWindow(PyreWindowBase):
                 StosWindow.stosfilename = dlg.GetFilename()
                 saveFileFullPath = os.path.join(StosWindow.stosdirname, StosWindow.stosfilename)
 
-                stosObj = StosFile.Create(pyre.state.currentStosConfig.FixedImageViewModel.ImageFilename,
-                                          pyre.state.currentStosConfig.WarpedImageViewModel.ImageFilename,
-                                          pyre.state.currentStosConfig.Transform)
+                stosObj = StosFile.Create(state.currentStosConfig.FixedImageViewModel.ImageFilename,
+                                          state.currentStosConfig.WarpedImageViewModel.ImageFilename,
+                                          state.currentStosConfig.Transform)
                 stosObj.Save(saveFileFullPath)
             dlg.Destroy()
 
@@ -583,7 +569,7 @@ class TextDrop (wx.TextDropTarget):
         self.window = window
 
     def OnDragOver(self, *args, **kwargs):
-        print "DragOver Text"
+        print("DragOver Text")
         return wx.TextDropTarget.OnDragOver(self, *args, **kwargs)
 
     def OnDropText(self, x, y, data):
@@ -596,7 +582,7 @@ class FileDrop (wx.FileDropTarget):
         self.window = window
 
     def OnDragOver(self, *args, **kwargs):
-        print "DragOver"
+        print("DragOver")
         return wx.FileDropTarget.OnDragOver(self, *args, **kwargs)
 
     def OnDropFiles(self, x, y, filenames):
@@ -609,16 +595,16 @@ class FileDrop (wx.FileDropTarget):
                 if extension == ".stos":
                     StosWindow.stosdirname = dirname
                     StosWindow.stosfilename = filename
-                    pyre.state.currentStosConfig.LoadStos(fullpath) 
+                    state.currentStosConfig.LoadStos(fullpath) 
                 elif extension == ".mosaic":
                     StosWindow.stosdirname = dirname
                     StosWindow.stosfilename = filename
-                    pyre.state.currentStosConfig.LoadMosaic(fullpath)
+                    state.currentStosConfig.LoadMosaic(fullpath)
                 else:
                     if self.window.ID == "Fixed":
-                        pyre.state.currentStosConfig.LoadFixedImage(fullpath)
+                        state.currentStosConfig.LoadFixedImage(fullpath)
                     elif self.window.ID == "Warped":
-                        pyre.state.currentStosConfig.LoadWarpedImage(fullpath)
+                        state.currentStosConfig.LoadWarpedImage(fullpath)
                     else:
                         pass
 

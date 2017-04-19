@@ -4,24 +4,14 @@ Created on Sep 12, 2013
 @author: u0490822
 '''
 
-import os
-import numpy
-from scipy.misc import imread
 import logging
+import os
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
-
+import numpy
 from pkg_resources import resource_filename
-
-# def ConfigDataPath():
-#    return resource_filename(__name__, 'config')
-#     try:
-#         path = os.path.dirname(__file__)
-#     except:
-#         path = os.getcwd()
-#
-#     return path
+from scipy.misc import imread
 
 def ResourcePath():
     Logger = logging.getLogger("resources")
@@ -65,6 +55,3 @@ def TextureForNumpyImage(image):
 def LoadTexture(image):
     data = imread(image, flatten=True)
     return TextureForNumpyImage(data)
-
-if __name__ == '__main__':
-    pass

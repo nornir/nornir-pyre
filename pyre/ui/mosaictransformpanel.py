@@ -4,18 +4,18 @@ Created on Feb 6, 2015
 @author: u0490822
 '''
 
-import imagetransformpanelbase
 import operator
-import pyre.ui
-import pyre.state
-import pyre.views
-import wx  
-import pyglet.gl as gl
+
 import nornir_imageregistration
 import nornir_imageregistration.spatial
-import nornir_imageregistration.transforms.utils as utils
 from pyre.state import currentMosaicConfig
+import wx  
 
+import imagetransformpanelbase
+import nornir_imageregistration.transforms.utils as utils
+import pyglet.gl as gl
+import pyre.ui
+import pyre.views
 
 
 def _get_ITV_transform(ITV):
@@ -68,7 +68,7 @@ class MosaicTransformPanel(imagetransformpanelbase.ImageTransformPanelBase):
         self.Command = None
         
     def OnMosaicChanged(self):
-        self.ImageTransformViewList = pyre.state.currentMosaicConfig.ImageTransformViewList
+        self.ImageTransformViewList = currentMosaicConfig.ImageTransformViewList
         self.center_camera()
         
         

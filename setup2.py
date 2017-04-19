@@ -1,19 +1,21 @@
 #from distutils.core import setup
 
-import sys
-# from cx_Freeze import setup, Executable
 from distutils.core import setup
+from glob import glob
+import sys
 
+import matplotlib
+import scipy
+import wx
+
+
+# from cx_Freeze import setup, Executable
 if not hasattr(sys, 'frozen'):
     import wxversion
     wxversion.select('2.8')
-import wx
 
 # import py2exe
 # import PyreGui
-import matplotlib
-from glob import glob
-import scipy
 
 data_files = []
 # data_files = {'pyre' : ['pyre/resources/*.png']}

@@ -1,12 +1,14 @@
 import sys
+import sys
+
+import wx
+
 
 if not hasattr(sys, 'frozen'):
     import wxversion
     print "Wx version: " + str(wxversion.getInstalled())
     wxversion.select('2.8')
-import wx
 
-import sys
 print "Python version: " + sys.version
 
 class TestWxDrop(wx.Frame):

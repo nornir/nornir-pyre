@@ -1,4 +1,5 @@
-__all__ = ['imageviewmodel', 'transformcontroller']
+from imageviewmodel import ImageViewModel
+from mosaicviewmodel import MosaicViewModel
+from transformcontroller import TransformController
 
-from pyre.viewmodels import imageviewmodel
-from pyre.viewmodels import transformcontroller
+__all__ = ['ImageViewModel', 'TransformController', 'MosaicViewModel']

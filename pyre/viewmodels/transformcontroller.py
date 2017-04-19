@@ -4,20 +4,22 @@ Created on Oct 19, 2012
 @author: u0490822
 '''
 
-import math
-import numpy
+import copy
 import logging
-import scipy.spatial
+import math
+import time
+
+from nornir_imageregistration.alignment_record import AlignmentRecord
+from nornir_imageregistration.transforms import *
+import numpy
 import pyglet
 from pyglet.gl import *
-from nornir_imageregistration.transforms import *
-import numpy as np
 import scipy.ndimage
-import common
-import time
-import copy
+import scipy.spatial
+
+import pyre.common
 import nornir_pools as pools
-from nornir_imageregistration.alignment_record import AlignmentRecord
+import numpy as np
 
 
 def CreateDefaultTransform(FixedShape=None, WarpedShape=None):
@@ -340,7 +342,7 @@ class  TransformController(object):
                 fixed = self.GetFixedPoint(i_point)
                 warped = self.GetWarpedPoint(i_point)
                 
-                task = pool.add_task(i_point, common.AttemptAlignPoint,
+                task = pool.add_task(i_point, pyre.common.AttemptAlignPoint,
                                                 self,
                                                 currentStosConfig.FixedImageViewModel.Image,
                                                 currentStosConfig.WarpedImageViewModel.Image,
@@ -369,7 +371,7 @@ class  TransformController(object):
             i_point = i_points[0]
             fixed = self.GetFixedPoint(i_point)
             warped = self.GetWarpedPoint(i_point)
-            record = common.AttemptAlignPoint(self,
+            record = pyre.common.AttemptAlignPoint(self,
                                     currentStosConfig.FixedImageViewModel.Image,
                                     currentStosConfig.WarpedImageViewModel.Image,
                                     fixed,

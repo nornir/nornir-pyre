@@ -1,10 +1,8 @@
-__all__ = ['camera', 'glpanel', 'imagetransformpanel', 'imagetransformpanelbase', 'mosaictransformpanel', 'command_base']
+from camera import Camera, screen_to_volume
+from camerastatusbar import CameraStatusBar
+from glpanel import GLPanel
+from imagetransformpanel import ImageTransformViewPanel
+from mosaictransformpanel import MosaicTransformPanel
 
-import camera
-import glpanel 
-import imagetransformpanel
-import imagetransformpanelbase
-import mosaictransformpanel
-import rectangle_command
-import camerastatusbar
-import command_base
+__all__ = ['Camera', 'screen_to_volume', 'CameraStatusBar',
+           'GLPanel', 'ImageTransformViewPanel', 'MosaicTransformPanel']

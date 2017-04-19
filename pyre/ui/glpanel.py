@@ -1,15 +1,14 @@
 #!/usr/bin/python
 import os
 import sys
-if not hasattr(sys, 'frozen'):
-    import wxversion
-    wxversion.select('3.0') 
-import wx
-from wx import glcanvas
 
-import pyglet
-pyglet.options['shadow_window'] = False
 from pyglet import gl
+import pyglet
+    
+from wx import glcanvas
+import wx
+
+pyglet.options['shadow_window'] = False
 
 class GLPanel(wx.Panel):
 
