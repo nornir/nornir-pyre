@@ -360,6 +360,16 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
 
         if color is None:
             color = (1.0, 1.0, 1.0, 1.0)
+        
+        gl.glEnable(gl.GL_TEXTURE_2D)
+        gl.glDisable(gl.GL_CULL_FACE)
+        
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
+
+        pyglet.gl.glColor4f(color[0], color[1], color[2], color[3])
 
         for ix in range(0, ImageViewModel.NumCols):
             column = ImageViewModel.ImageArray[ix]
@@ -395,24 +405,16 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
                     cacheColumn[iy] = array
                 else:
                     array = cacheColumn[iy]
-
-
-                gl.glEnable(gl.GL_TEXTURE_2D)
-                gl.glDisable(gl.GL_CULL_FACE)
-
-                pyglet.gl.glColor4f(color[0], color[1], color[2], color[3])
+ 
 
                 gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
                 gl.glPushClientAttrib(gl.GL_CLIENT_VERTEX_ARRAY_BIT)
                 gl.glInterleavedArrays(gl.GL_T4F_V4F, 0, array)
                 gl.glDrawArrays(gl.GL_QUADS, 0, 4)
                 gl.glPopClientAttrib()
 
-                pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
+        
+        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
                 
                  
     def WarpedImageDataGrid(self, grid_size):
