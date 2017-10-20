@@ -116,10 +116,10 @@ class  TransformController(object):
 
 
     def OnTransformChanged(self):
-        # If the transform is getting complicated then use UpdateDataStructures to parallelize the
+        # If the transform is getting complicated then use InitializeDataStructures to parallelize the
         # data structure creation as much as possible
         if self.NumPoints > 25:
-            self._TransformModel.UpdateDataStructures()
+            self._TransformModel.InitializeDataStructures()
         self.FireOnChangeEvent()
 
 

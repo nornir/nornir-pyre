@@ -226,7 +226,7 @@ class ImageTransformViewPanel(imagetransformpanelbase.ImageTransformPanelBase):
 
             print multiplier
             self.TransformController.MovePoint(self.HighlightedPointIndex, delta[1], delta[0], FixedSpace=self.FixedSpace)
-            
+
 
         elif symbol == 'a':  # "A" Character
             ImageDX = 0.1 * self.camera.ViewWidth
