@@ -61,7 +61,7 @@ class CommandHistory (object):
         if index >= len(self.History):
             index = len(self.History) - 1
 
-        print "Restore State #" + str(index)
+        print("Restore State #" + str(index))
 
         (recoveryfunction, args, kwargs) = self.History[index]
 

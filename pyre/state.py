@@ -3,25 +3,41 @@ Created on Oct 24, 2012
 
 @author: u0490822
 '''
+import os
 import sys
-import numpy
-import wx
-import pyre
-import nornir_imageregistration.tileset
+
 from nornir_imageregistration.files.stosfile import StosFile
 from nornir_imageregistration.mosaic import Mosaic
+import nornir_imageregistration.tileset 
 import nornir_imageregistration.transforms.factory as factory
-from pyre.viewmodels.imageviewmodel import ImageViewModel 
-import os
-from pyre.views.imagegridtransformview import ImageGridTransformView
-from pyre.viewmodels.transformcontroller import TransformController
-from nornir_imageregistration.transforms.factory import LoadTransform
 import nornir_pools
+import numpy
+import wx
+
+from pyre import Windows
+from pyre.viewmodels import ImageViewModel, TransformController
+from pyre.views import ImageGridTransformView
 
 
-# app = wx.App(False)
+ 
 currentStosConfig = None
+currentMosaicConfig = None
 
+def InitializeStateFromArguments(arg_values):
+    if 'stosFullPath' in arg_values and arg_values.stosFullPath is not None:
+            currentStosConfig.LoadStos(arg_values.stosFullPath)
+    else:
+        if 'WarpedImageFullPath' in arg_values and arg_values.WarpedImageFullPath is not None:
+            currentStosConfig.LoadWarpedImage(arg_values.WarpedImageFullPath)
+        if 'FixedImageFullPath' in arg_values and arg_values.FixedImageFullPath is not None:
+            currentStosConfig.LoadFixedImage(arg_values.FixedImageFullPath)
+
+    if 'mosaicFullPath' in arg_values and arg_values.mosaicFullPath is not None:
+        tiles_path = os.path.dirname(arg_values.mosaicFullPath)
+        if 'mosaicTilesFullPath' in arg_values and arg_values.mosaicTilesFullPath is not None:
+            tiles_path = arg_values.mosaicTilesFullPath
+
+        currentMosaicConfig.LoadMosaic(arg_values.mosaicFullPath, tiles_path)
 
 
 class StateEvents(object):
@@ -185,15 +201,15 @@ class StosState(StateEvents):
     
     @property
     def FixedWindow(self):
-        return pyre.Windows["Fixed"]
+        return Windows["Fixed"]
     
     @property
     def WarpedWindow(self):
-        return pyre.Windows["Warped"]
+        return Windows["Warped"]
     
     @property
     def CompositeWindow(self):
-        return pyre.Windows["Composite"]
+        return Windows["Composite"]
     
     @property
     def FixedImageFullPath(self):
@@ -331,9 +347,14 @@ class StosState(StateEvents):
             self.FixedImageViewModel = ivm
         else:
             self.WarpedImageViewModel = ivm
-        
-        
+
+
     def LoadStos(self, stosFullPath):
+
+        if stosFullPath is None:
+            return False
+
+        success = True
 
         dirname = os.path.dirname(stosFullPath)
         filename = os.path.basename(stosFullPath)
@@ -349,6 +370,7 @@ class StosState(StateEvents):
                 self.LoadFixedImage(nextPath)
             else:
                 print("Could not find fixed image: " + obj.ControlImageFullPath)
+                success = False
 
         if os.path.exists(obj.MappedImageFullPath):
             self.LoadWarpedImage(obj.MappedImageFullPath)
@@ -358,17 +380,21 @@ class StosState(StateEvents):
                 self.LoadWarpedImage(nextPath)
             else:
                 print("Could not find fixed image: " + obj.MappedImageFullPath)
-                
+                success = False
+
+        return success
+
     def WindowsLookAtFixedPoint(self, fixed_point, scale):
         '''Force all open windows to look at this point'''
-         
+
         self.FixedWindow.lookatfixedpoint(fixed_point, scale)
         self.WarpedWindow.lookatfixedpoint(fixed_point, scale)
         self.CompositeWindow.lookatfixedpoint(fixed_point, scale)
 
 
-currentStosConfig = StosState()
-currentMosaicConfig = MosaicState()
+def init(): 
+    global currentStosConfig
+    currentStosConfig = StosState()
 
-if __name__ == '__main__':
-    pass
+    global currentMosaicConfig 
+    currentMosaicConfig = MosaicState()

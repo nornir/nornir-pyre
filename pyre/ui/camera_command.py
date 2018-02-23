@@ -2,9 +2,9 @@
 import nornir_imageregistration.spatial
 import numpy
 import wx 
-import pyre.views
-import command_base
 
+import command_base
+import pyre.views
 
 
 class CameraCommand(command_base.VolumeCommandBase):

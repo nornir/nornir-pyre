@@ -6,29 +6,22 @@ Created on Oct 19, 2012
 '''
 
 
-import numpy
+from imageop import scale
 import logging
-import scipy.spatial
-import os
 import math
-
-import pyglet
-
-import pyglet.gl as gl
-import nornir_imageregistration.transforms.base
-import nornir_imageregistration.transforms.triangulation
-import nornir_imageregistration.spatial
-
-import scipy.spatial.distance
-
-import pyre.views
-
-from pyre.viewmodels.transformcontroller import TransformController
-
+import os
 import time
 
-import resources
-from imageop import scale
+import nornir_imageregistration.spatial
+import nornir_imageregistration.transforms.base
+import nornir_imageregistration.transforms.triangulation
+import numpy
+import pyglet
+import scipy.spatial
+import scipy.spatial.distance
+
+import pyglet.gl as gl
+import pyre
 
 
 class RenderCache(object):
@@ -86,12 +79,12 @@ class PointTextures(object):
     @classmethod
     def LoadTextures(cls):
         if cls.__pointImage is None:
-            cls.__pointImage = pyglet.image.load(os.path.join(resources.ResourcePath(), "Point.png"))
+            cls.__pointImage = pyglet.image.load(os.path.join(pyre.resources.ResourcePath(), "Point.png"))
             cls.__pointImage.anchor_x = cls.__pointImage.width / 2
             cls.__pointImage.anchor_y = cls.__pointImage.height / 2
             
         if cls.__selectedPointImage is None:
-            cls.__selectedPointImage = pyglet.image.load(os.path.join(resources.ResourcePath(), "SelectedPoint.png"));
+            cls.__selectedPointImage = pyglet.image.load(os.path.join(pyre.resources.ResourcePath(), "SelectedPoint.png"));
             cls.__selectedPointImage.anchor_x = cls.__selectedPointImage.width / 2
             cls.__selectedPointImage.anchor_y = cls.__selectedPointImage.height / 2
  
@@ -367,6 +360,16 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
 
         if color is None:
             color = (1.0, 1.0, 1.0, 1.0)
+        
+        gl.glEnable(gl.GL_TEXTURE_2D)
+        gl.glDisable(gl.GL_CULL_FACE)
+        
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
+
+        pyglet.gl.glColor4f(color[0], color[1], color[2], color[3])
 
         for ix in range(0, ImageViewModel.NumCols):
             column = ImageViewModel.ImageArray[ix]
@@ -402,24 +405,16 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
                     cacheColumn[iy] = array
                 else:
                     array = cacheColumn[iy]
-
-
-                gl.glEnable(gl.GL_TEXTURE_2D)
-                gl.glDisable(gl.GL_CULL_FACE)
-
-                pyglet.gl.glColor4f(color[0], color[1], color[2], color[3])
+ 
 
                 gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-                gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
                 gl.glPushClientAttrib(gl.GL_CLIENT_VERTEX_ARRAY_BIT)
                 gl.glInterleavedArrays(gl.GL_T4F_V4F, 0, array)
                 gl.glDrawArrays(gl.GL_QUADS, 0, 4)
                 gl.glPopClientAttrib()
 
-                pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
+        
+        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
                 
                  
     def WarpedImageDataGrid(self, grid_size):
@@ -446,8 +441,8 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         '''
          
         (y, x) = tile_bounding_rect.BottomLeft
-        h = tile_bounding_rect.Height
-        w = tile_bounding_rect.Width
+        h = int(tile_bounding_rect.Height)
+        w = int(tile_bounding_rect.Width)
      
         WarpedCorners = [[y, x],
                         [ y, x + w, ],
@@ -472,8 +467,8 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         '''
          
         (y, x) = tile_bounding_rect.BottomLeft
-        h = tile_bounding_rect.Height
-        w = tile_bounding_rect.Width
+        h = int(tile_bounding_rect.Height)
+        w = int(tile_bounding_rect.Width)
      
         WarpedCorners = [[y, x],
                         [ y, x + w, ],
@@ -624,7 +619,7 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         if ImageViewModel.NumCols > 1 or ImageViewModel.NumRows > 1:
             return self._draw_warped_imagegridviewmodel(ImageViewModel, ForwardTransform=True, tex_color=tex_color, BoundingBox=BoundingBox, z=z, glFunc=glFunc)
         
-        WarpedImageDataGrid = self.WarpedImageDataGrid( (ImageViewModel.NumRows, ImageViewModel.NumRows) )
+        WarpedImageDataGrid = self.WarpedImageDataGrid( (ImageViewModel.NumRows, ImageViewModel.NumCols) )
         
         if WarpedImageDataGrid[0][0] is None:
             tile_fixed_bounding_rect = nornir_imageregistration.spatial.Rectangle.CreateFromPointAndArea((0,0), ImageViewModel.TextureSize)
@@ -653,7 +648,7 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
         if tex_color is None:
             tex_color = (1.0, 1.0, 1.0, 1.0)
             
-        WarpedImageDataGrid = self.WarpedImageDataGrid( (ImageViewModel.NumRows, ImageViewModel.NumRows) )
+        WarpedImageDataGrid = self.WarpedImageDataGrid( (ImageViewModel.NumRows, ImageViewModel.NumCols) )
   
         for ix in range(0, ImageViewModel.NumCols):
             column = ImageViewModel.ImageArray[ix]
@@ -661,7 +656,7 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
                 texture = column[iy]
                 x = ImageViewModel.TextureSize[1] * ix
                 y = ImageViewModel.TextureSize[0] * iy 
-                
+
                 tile_fixed_bounding_rect = nornir_imageregistration.spatial.Rectangle.CreateFromPointAndArea((y,x), ImageViewModel.TextureSize)
 
                 vertarray = None
@@ -670,11 +665,11 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
                 tilecolor = None
 
                 if WarpedImageDataGrid[ix][iy] is None:
-                    
-                    warped_bounding_rect = ImageGridTransformView._tile_bounding_rect(self.Transform, tile_fixed_bounding_rect, ForwardTransform)
-                    if not nornir_imageregistration.spatial.Rectangle.contains(BoundingBox, warped_bounding_rect):
-                        continue
-                    
+
+                    #warped_bounding_rect = ImageGridTransformView._tile_bounding_rect(self.Transform, tile_fixed_bounding_rect, ForwardTransform)
+                    #if not nornir_imageregistration.spatial.Rectangle.contains(BoundingBox, warped_bounding_rect):
+                    #    continue
+
                     GridPoints = ImageGridTransformView._tile_grid_points(tile_fixed_bounding_rect,  grid_size = (8.0, 8.0))
                     GridPointPairs = ImageGridTransformView._find_corresponding_points(self.Transform, GridPoints, ForwardTransform=ForwardTransform)
                     TransformPoints = self.Transform.GetPointsInWarpedRect(tile_fixed_bounding_rect)
@@ -682,7 +677,7 @@ class ImageGridTransformView(ImageTransformViewBase,PointTextures):
                         AllPointPairs = GridPointPairs
                     else:
                         AllPointPairs = ImageGridTransformView._merge_point_pairs_with_transform(GridPointPairs, TransformPoints)
-                        
+
                     vertarray, texarray, verts = ImageGridTransformView._render_data_for_transform_point_pairs(AllPointPairs, tile_fixed_bounding_rect, z=z)
 
                     WarpedImageDataGrid[ix][iy] = (vertarray, texarray, verts)

@@ -4,21 +4,22 @@ Created on Oct 17, 2012
 @author: u0490822
 '''
 
-import math
-import numpy
 import logging
+import math
 import os
-import scipy.ndimage
-import nornir_shared.images as images
 import sys
-from pylab import *
-import resources
-import nornir_imageregistration.core as core
-import common
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 import nornir_imageregistration
+import numpy
+from pylab import * 
+from pyre import resources
+import scipy.ndimage
+
+import nornir_imageregistration.core as core
+import nornir_shared.images as images
+
 
 Logger = logging.getLogger("ImageArray")
 

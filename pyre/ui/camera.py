@@ -4,10 +4,12 @@ Created on Oct 17, 2012
 @author: u0490822
 '''
 
-from pyglet.gl import *
 import math
+
 import nornir_imageregistration
 import numpy
+from pyglet.gl import *
+
 
 def screen_to_volume(camera, point):
     camera.ImageCoordsForMouse(point)

@@ -1,12 +1,19 @@
-__all__ = ['compositetransformview', 'imagegridtransformview']
- 
-import compositetransformview
-from pyre.views import imagegridtransformview
+import ctypes
+
 import numpy
 import pyglet
+from pyglet.gl import *
+from pyglet.graphics import vertexbuffer, vertexattribute, vertexdomain
+
+from compositetransformview import CompositeTransformView
+import compositetransformview
+from imagegridtransformview import ImageGridTransformView
+from mosaicview import MosaicView
 import pyglet.gl as gl
-
-
+from pyre.views import imagegridtransformview
+ 
+__all__ = ['CompositeTransformView', 'ImageGridTransformView', 'MosaicView']
+ 
 def LineIndiciesFromTri(T):
     '''
     :param ndarray T: numpy array of triangle indicies
@@ -161,9 +168,6 @@ def DrawTextureWithBuffers(texture, vertarray, buffers, verts, color=None, glFun
       
     
 
-import ctypes 
-from pyglet.gl import *
-from pyglet.graphics import vertexbuffer, vertexattribute, vertexdomain
 
 AttributeLookup = {}
 

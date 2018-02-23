@@ -7,9 +7,9 @@ Created on Feb 10, 2015
 import nornir_imageregistration.spatial
 import numpy
 import wx 
-import pyre.views
-import command_base
 
+import command_base
+import pyre.views
 
 
 class RectangleCommand(command_base.VolumeCommandBase):

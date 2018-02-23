@@ -5,21 +5,17 @@ Created on Oct 19, 2012
 '''
 
 
-import numpy
 import logging
+import os
+
+from nornir_imageregistration.transforms import *
+import numpy
+import pyglet
 import scipy.spatial
 
 import pyglet.gl as gl
-from nornir_imageregistration.transforms import *
- 
 from pyre.views import imagegridtransformview
-
 import pyre.views
-
-import pyglet
-
-import os
-import resources
 
 
 class CompositeTransformView(  imagegridtransformview.ImageGridTransformView):
